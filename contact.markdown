@@ -2,5 +2,6 @@
 title: Contact
 ---
 
-I live in a small hut in the mountains of Kumano Kodō on Kii Hantō and would not
-like to be contacted.
+email: [majecty@gmail.com](mailto:majecty@gmail.com)
+
+twitter: [twitter.com/majecty](https://twitter.com/majecty)
