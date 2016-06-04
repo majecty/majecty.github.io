@@ -1,0 +1,47 @@
+---
+title: foldr
+author: 주형
+---
+
+fold는 리스트를 순회하면서 값을 합쳐나가는 함수입니다. 
+
+```Haskell
+foldr :: (a -> b -> b) -> b -> [a] -> b
+```
+
+첫 번째 인자로 값을 누적해가는 함수를 받습니다. 두 번째 인자로 초기 값을 받습니다. 세 번째 값으로 리스트를 받아서 값을 누적해갑니다.
+
+foldr을 recursive를 사용하여 구현하면 다음과 값습니다.
+
+```Haskell
+foldr f v [] = v
+foldr f v (x:xs) = f x (foldr f v xs)
+```
+
+중복해서 나오는 foldr f v 를 y 로 치환해서 보면 구조가 잘 보입니다.
+
+```Haskell
+y = foldr f v
+
+y [] = v
+y (x:xs) = x `f` (y xs)
+```
+
+foldr를 쓰는 간단한 예시로 리스트를 전부 더하는 함수나 곱하는 함수가 있습니다.
+
+```Haskell
+sum :: Num a => [a] -> a
+sum [] = 0
+sum (x:xs) = x + (sum xs)
+
+product :: Num a => [a] -> a
+product [] = 1
+product (x:xs) = x * (product xs)
+```
+
+보면 foldr의 정의와 매우 닮아있습니다. sum의 경우엔 foldr의 v 가 0이고 f가 (+)가 됩니다.
+
+```Haskell
+sum = foldr (+) 0
+product = foldr (*) 1
+```
