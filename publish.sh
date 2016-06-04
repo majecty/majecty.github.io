@@ -7,3 +7,4 @@ git add .
 git commit -m 'Publish'
 git push origin develop
 git push origin master -f
+git checkout develop
