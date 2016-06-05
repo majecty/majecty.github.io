@@ -1,6 +1,8 @@
 ---
 title: foldr
 author: 주형
+tags: haskell, foldr
+home: haskell
 ---
 
 fold는 리스트를 순회하면서 값을 합쳐나가는 함수입니다. 

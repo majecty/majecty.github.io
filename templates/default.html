@@ -21,10 +21,18 @@ ga('send', 'pageview');
     <body>
         <div id="header">
             <div id="logo">
+                $if(home)$
+                <a href="/tags/$home$.html">주형 블로그</a>
+                $else$
                 <a href="/">주형 블로그</a>
+                $endif$
             </div>
             <div id="navigation">
+                $if(home)$
+                <a href="/tags/$home$.html">Home</a>
+                $else$
                 <a href="/">Home</a>
+                $endif$
                 <a href="/about.html">About</a>
                 <a href="/contact.html">Contact</a>
                 <a href="/archive.html">Archive</a>

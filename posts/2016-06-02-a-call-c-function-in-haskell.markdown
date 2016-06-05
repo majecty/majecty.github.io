@@ -1,6 +1,8 @@
 ---
 title: 하스켈에서 C 함수 호출하기
 author: 주형
+tags: haskell
+home: haskell
 ---
 
 하스켈에서 간단하게 c 함수를 호출할 수 있습니다.
