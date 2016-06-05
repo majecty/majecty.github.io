@@ -47,3 +47,6 @@ filter predicate (x:xs) = ((++) . (\x -> if predicate x then [x] else [])) x (fi
 filter predicate = foldr ((++) . (\x -> if predicate x then [x] else [])) []
 ```
 
+# 참고
+
+[http://www.cs.nott.ac.uk/~pszgmh/fold.pdf](http://www.cs.nott.ac.uk/~pszgmh/fold.pdf)

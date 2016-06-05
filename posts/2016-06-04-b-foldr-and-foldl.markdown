@@ -73,3 +73,5 @@ consUntilZero 1 (foldr consUntilZero 0 [2,0,3])
 
 연산이 중간에 끝나는 경우에는 foldr을 쓰는 것이 좋습니다. 연산을 해야하는 데이터가 크고 전체를 돌아야한다면 foldl'을 쓰는 것이 좋습니다.
 
+# 참고
+[https://wiki.haskell.org/Foldr_Foldl_Foldl'](https://wiki.haskell.org/Foldr_Foldl_Foldl')
