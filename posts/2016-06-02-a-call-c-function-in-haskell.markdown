@@ -1,7 +1,7 @@
 ---
 title: 하스켈에서 C 함수 호출하기
 author: 주형
-tags: haskell
+tags: haskell, 하스켈
 home: haskell
 ---
 

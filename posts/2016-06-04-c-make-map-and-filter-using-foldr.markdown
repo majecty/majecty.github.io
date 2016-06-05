@@ -1,7 +1,7 @@
 ---
 title: foldr로 map과 filter만들기
 author: 주형
-tags: haskell, foldr
+tags: haskell, foldr, 하스켈
 home: haskell
 ---
 

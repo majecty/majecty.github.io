@@ -1,7 +1,7 @@
 ---
 title: foldr과 foldl
 author: 주형
-tags: haskell, foldr
+tags: haskell, foldr, 하스켈
 home: haskell
 ---
 
