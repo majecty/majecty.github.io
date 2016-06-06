@@ -1,5 +1,6 @@
 --------------------------------------------------------------------------------
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ExplicitForAll #-}
 import           Data.Monoid (mappend)
 import           Hakyll
 
@@ -33,15 +34,19 @@ main = hakyll $ do
             >>= relativizeUrls
 
     tagsRules tags $ \tag pattern -> do
+        let customizedTag = customTag tag
         route idRoute
         compile $ do
-            posts <- recentFirst =<< loadAll pattern
-            let tagsCtx = addTagContext tag `mappend`
-                          constField "title" (tagTitle tag) `mappend`
+            let order = case sortOrder customizedTag of
+                            RecentFirst -> recentFirst
+                            RecentLast -> chronological
+            posts <- order =<< loadAll pattern
+            let tagsCtx = context customizedTag `mappend`
+                          constField "title" (title customizedTag) `mappend`
                           listField "posts" ctx (return posts) `mappend`
                           defaultContext
             makeItem ""
-                >>= loadAndApplyTemplate (tagTemplate tag) tagsCtx
+                >>= loadAndApplyTemplate (template customizedTag) tagsCtx
                 >>= loadAndApplyTemplate "templates/default.html" tagsCtx
                 >>= relativizeUrls
 
@@ -101,15 +106,23 @@ postCtx tags =
     dateField "date" "%B %e, %Y" `mappend`
     defaultContext
 
-tagTemplate :: String -> Identifier
-tagTemplate "2016-06-07-foldr-presentation" = "customTags/2016-06-07-foldr-presentation.html"
-tagTemplate _ = "templates/tag.html"
+data SortOrder = RecentFirst | RecentLast
 
-tagTitle :: String -> String
-tagTitle "haskell" = "하스켈 글들"
-tagTitle "2016-06-07-foldr-presentation" = "foldr 발표를 위해 준비한 글"
-tagTitle tag = tag ++ " 태그가 붙은 글들"
+data CustomTag = CustomTag {
+      template :: Identifier,
+      title :: String,
+      context :: Context String,
+      sortOrder :: SortOrder
+  }
 
-addTagContext :: String -> Context String
-addTagContext "haskell" = constField "home" "haskell"
-addTagContext _ = mempty
+defaultTag tag = CustomTag "templates/tag.html" (tag ++ " 태그가 붙은 글들") mempty RecentFirst
+
+customTag :: String -> CustomTag
+customTag tag@"2016-06-07-foldr-presentation" = (defaultTag tag) {
+        template = "customTags/2016-06-07-foldr-presentation.html",
+        title = "foldr 발표를 위한 글들",
+        context = constField "home" "haskell",
+        sortOrder = RecentLast
+    }
+customTag "haskell" = (defaultTag "haskell") { title = "하스켈 글들", context = constField "home" "haskell" }
+customTag tag = defaultTag tag
