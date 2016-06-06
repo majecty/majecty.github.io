@@ -3,6 +3,7 @@ title: foldr과 foldl
 author: 주형
 tags: haskell, foldr, 하스켈
 home: haskell
+description: foldr과 foldl은 어떻게 다른가
 ---
 
 # 왼쪽과 오른쪽

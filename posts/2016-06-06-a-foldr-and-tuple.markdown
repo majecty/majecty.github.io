@@ -2,6 +2,7 @@
 title: foldr과 tuple
 author: 주형
 tags: haskell, foldr, 하스켈
+description: tuple을 사용하여 foldr을 더 강력하게
 ---
 
 tuple을 사용하면 foldr로 좀 더 많은 일들을 할 수 있습니다.

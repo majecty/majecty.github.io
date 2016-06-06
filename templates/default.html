@@ -5,7 +5,11 @@
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        $if(description)$
+        <meta name="description" content="$description$">
+        $else$
         <meta name="description" content="하스켈과 게임개발을 다루는 블로그">
+        $endif$
 
         <meta property="og:type" content="website">
         <meta property="og:title" content="주형 블로그">
