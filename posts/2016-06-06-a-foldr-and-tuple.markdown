@@ -21,7 +21,7 @@ dropWhile p (x:xs) = if p x then dropWhile p xs else x : xs
 
 -- foldr 스타일로 바꾸어 봅시다.
 
-dropWhile p (x:xs) = (\y ys -> if p y then dropWhile p ys else y : xs) x (dropWhile p xs)
+dropWhile p (x:xs) = (\y ys -> if p y then ys else y : xs) x (dropWhile p xs)
 
 -- foldr 스타일과 비슷하게 되었지만, 함수 안에서 xs가 필요해서 foldr로 바꿀 수 없습니다.
 ```
