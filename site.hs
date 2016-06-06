@@ -3,6 +3,7 @@
 import           Data.Monoid (mappend)
 import           Hakyll
 
+host = "https://blog.majecty.com"
 
 --------------------------------------------------------------------------------
 main :: IO ()
@@ -75,10 +76,24 @@ main = hakyll $ do
 
     match "templates/*" $ compile templateBodyCompiler
 
+    create ["sitemap.xml"] $ do
+       route   idRoute
+       compile $ do
+         posts <- recentFirst =<< loadAll "posts/*"
+         pages <- loadAll "pages/*"
+         let allPosts = (return (posts ++ pages))
+         let sitemapCtx = mconcat
+                          [ listField "entries" ctx allPosts
+                          , defaultContext
+                          ]
+         makeItem ""
+          >>= loadAndApplyTemplate "templates/sitemap.xml" sitemapCtx
+          >>= relativizeUrls
 
 --------------------------------------------------------------------------------
 postCtx :: Tags -> Context String
 postCtx tags =
+    constField "host" host `mappend`
     tagsField "tags" tags `mappend`
     dateField "date" "%B %e, %Y" `mappend`
     defaultContext
