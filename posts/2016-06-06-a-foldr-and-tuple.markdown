@@ -1,7 +1,7 @@
 ---
 title: foldr과 tuple
 author: 주형
-tags: haskell, foldr, 하스켈
+tags: haskell, foldr, 하스켈, 2016-06-07-foldr-presentation
 description: tuple을 사용하여 foldr을 더 강력하게
 ---
 

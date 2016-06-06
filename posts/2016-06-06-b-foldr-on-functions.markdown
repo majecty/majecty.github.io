@@ -1,7 +1,7 @@
 ---
 title: function을 fold하기
 author: 주형
-tags: haskell, foldr, 하스켈
+tags: haskell, foldr, 하스켈, 2016-06-07-foldr-presentation
 description: fundtion을 fold해보자
 ---
 

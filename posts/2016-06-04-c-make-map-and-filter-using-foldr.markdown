@@ -1,7 +1,7 @@
 ---
 title: foldr로 map과 filter만들기
 author: 주형
-tags: haskell, foldr, 하스켈
+tags: haskell, foldr, 하스켈, 2016-06-07-foldr-presentation
 home: haskell
 description: foldr로 map과 filter 만드는 법
 ---

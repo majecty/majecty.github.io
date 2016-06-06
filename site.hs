@@ -41,7 +41,7 @@ main = hakyll $ do
                           listField "posts" ctx (return posts) `mappend`
                           defaultContext
             makeItem ""
-                >>= loadAndApplyTemplate "templates/tag.html" tagsCtx
+                >>= loadAndApplyTemplate (tagTemplate tag) tagsCtx
                 >>= loadAndApplyTemplate "templates/default.html" tagsCtx
                 >>= relativizeUrls
 
@@ -74,8 +74,6 @@ main = hakyll $ do
                 >>= loadAndApplyTemplate "templates/default.html" indexCtx
                 >>= relativizeUrls
 
-    match "templates/*" $ compile templateBodyCompiler
-
     create ["sitemap.xml"] $ do
        route   idRoute
        compile $ do
@@ -90,6 +88,11 @@ main = hakyll $ do
           >>= loadAndApplyTemplate "templates/sitemap.xml" sitemapCtx
           >>= relativizeUrls
 
+    match "templates/*" $ compile templateBodyCompiler
+
+    match "customTags/*" $ compile templateBodyCompiler
+
+
 --------------------------------------------------------------------------------
 postCtx :: Tags -> Context String
 postCtx tags =
@@ -98,8 +101,13 @@ postCtx tags =
     dateField "date" "%B %e, %Y" `mappend`
     defaultContext
 
+tagTemplate :: String -> Identifier
+tagTemplate "2016-06-07-foldr-presentation" = "customTags/2016-06-07-foldr-presentation.html"
+tagTemplate _ = "templates/tag.html"
+
 tagTitle :: String -> String
 tagTitle "haskell" = "하스켈 글들"
+tagTitle "2016-06-07-foldr-presentation" = "foldr 발표를 위해 준비한 글"
 tagTitle tag = tag ++ " 태그가 붙은 글들"
 
 addTagContext :: String -> Context String
