@@ -8,8 +8,6 @@ description: iHaskell 소스코드에서 찾아본 foldl의 사용 예시
 
 iHaskell 의 소스코드를 읽다가 foldl'을 깔끔하게 사용한 코드를 찾아서 정리합니다.
 
-iHaskell에서 타입을 출력할 때 출력해도 의미 없는 module의 이름들을 지워서 출력합니다. string으로 된 모듈 이름에서 의미 없는 모듈 이름들을 지워주는 함수가 typeClearner함수입니다.
-
 iHaskell에서 타입을 출력할 때 출력해도 의미 없는 module의 이름들을 지워서 출력합니다. 예를 들면 GHC.Types.Int 라는 타입 이름이 있으면 앞의 GHC.Types를 지우고 Int만 프린트합니다. typeCleaner함수가 전체 타입 이름에서 의미가 없는 모듈 이름을 지우는 역할을 합니다. 의미 없는 모듈 이름들은 ignoreTypePrefixes에 정의되어있습니다.
 ```Haskell
 -- src/IHaskell/Eval/Evaluate.hs#L102
