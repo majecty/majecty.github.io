@@ -36,8 +36,8 @@ typeCleaner = useStringType . foldl' (.) id (map (`replace` "") fullPrefixes)
 fullPrefixes를 풀어써보면 다음과 같습니다.
 
 ```Haskell
-fullPrefix :: [String]
-fullPrefix = [ "GHC.Types."
+fullPrefixes :: [String]
+fullPrefixes = [ "GHC.Types."
              , "GHC.Base."
              , "GHC.Show."
              , "System.IO."
