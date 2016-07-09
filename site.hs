@@ -6,6 +6,16 @@ import           Hakyll
 
 host = "https://blog.majecty.com"
 
+feedConfiguration :: FeedConfiguration
+feedConfiguration = FeedConfiguration
+  {
+    feedTitle = "하스켈과 게임개발에 관한 블로그 글들",
+    feedDescription = "하스켈과 게임개발에 대해서 공부한 것, 경험한 것들을 정리했습니다.",
+    feedAuthorName = "주형",
+    feedAuthorEmail = "majecty+feed@gmail.com",
+    feedRoot = "https://blog.majecty.com"
+  }
+
 --------------------------------------------------------------------------------
 main :: IO ()
 main = hakyll $ do
@@ -96,6 +106,12 @@ main = hakyll $ do
     match "templates/*" $ compile templateBodyCompiler
 
     match "customTags/*" $ compile templateBodyCompiler
+
+    create ["atom.xml"] $ do
+      route idRoute
+      compile $ do
+          posts <- fmap (take 10) . recentFirst =<< loadAll "posts/*"
+          renderAtom feedConfiguration ctx posts
 
 
 --------------------------------------------------------------------------------
