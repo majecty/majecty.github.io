@@ -40,6 +40,7 @@ main = hakyll $ do
         route $ setExtension "html"
         compile $ pandocCompiler
             >>= loadAndApplyTemplate "templates/post.html"    ctx
+            >>= saveSnapshot "content"
             >>= loadAndApplyTemplate "templates/default.html" ctx
             >>= relativizeUrls
 
@@ -110,8 +111,10 @@ main = hakyll $ do
     create ["atom.xml"] $ do
       route idRoute
       compile $ do
-          posts <- fmap (take 10) . recentFirst =<< loadAll "posts/*"
-          renderAtom feedConfiguration ctx posts
+          let feedCtx = ctx `mappend` bodyField "description"
+          posts <- fmap (take 10) . recentFirst =<<
+            loadAllSnapshots "posts/*" "content"
+          renderAtom feedConfiguration feedCtx posts
 
 
 --------------------------------------------------------------------------------

@@ -2,7 +2,7 @@
 title: function을 fold하기
 author: 주형
 tags: haskell, foldr, 하스켈, 2016-06-07-foldr-presentation
-description: fundtion을 fold해보자
+summary: fundtion을 fold해보자
 ---
 
 foldr은 리스트에서 값을 모아가는 함수입니다. 하스켈에서는 함수가 다른 값처럼 인자로 혹은, 리턴값으로 사용될 수 있죠. foldr에서도 리스트를 돌면서 함수를 만들어나갈 수 있습니다.

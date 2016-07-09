@@ -3,7 +3,7 @@ title: iHaskell의 fold사용 예
 author: 주형
 tags: haskell, foldr, 하스켈
 home: haskell
-description: iHaskell 소스코드에서 찾아본 foldl의 사용 예시
+summary: iHaskell 소스코드에서 찾아본 foldl의 사용 예시
 ---
 
 iHaskell 의 소스코드를 읽다가 foldl'을 깔끔하게 사용한 코드를 찾아서 정리합니다.

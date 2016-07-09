@@ -3,7 +3,7 @@ title: foldr로 map과 filter만들기
 author: 주형
 tags: haskell, foldr, 하스켈, 2016-06-07-foldr-presentation
 home: haskell
-description: foldr로 map과 filter 만드는 법
+summary: foldr로 map과 filter 만드는 법
 ---
 
 리스트를 다루는 함수로 map, filter, fold를 자주 사용합니다. foldr을 사용해서 다른 두 함수를 만들어낼 수 있습니다. 하지만 다른 두 함수로는 foldr을 만들어낼 수 없습니다. foldr을 사용해서 어떻게 map이나 filter를 만들어 내는 지 살펴보겠습니다.

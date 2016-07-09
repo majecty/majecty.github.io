@@ -2,7 +2,7 @@
 title: 유니티 UI에서 버튼 선택가능 영역 설정하기
 author: 주형
 tags: unity, 삽질
-description: 유니티 UI에서 버튼 선택가능한 영역을 설정하는 법 정리
+summary: 유니티 UI에서 버튼 선택가능한 영역을 설정하는 법 정리
 ---
 
 # 깨진 유니티의 UI 추상화
