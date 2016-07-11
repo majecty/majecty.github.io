@@ -75,6 +75,15 @@ main = hakyll $ do
                 >>= loadAndApplyTemplate "templates/default.html" archiveCtx
                 >>= relativizeUrls
 
+    create ["search.html"] $ do
+        route idRoute
+        compile $ do
+            let searchCtx = constField "title" "Search" `mappend` defaultContext
+
+            makeItem ""
+                >>= loadAndApplyTemplate "templates/search.html" searchCtx
+                >>= loadAndApplyTemplate "templates/default.html" searchCtx
+                >>= relativizeUrls
 
     match "index.html" $ do
         route idRoute
