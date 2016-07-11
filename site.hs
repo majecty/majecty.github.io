@@ -22,6 +22,9 @@ main = hakyll $ do
     tags <- buildTags "posts/*" (fromCapture "tags/*.html")
     let ctx = postCtx tags
 
+    wikiTags <- buildTags "wikis/*" (fromCapture "wikiTags/*.html")
+    let wikiCtx = postCtx wikiTags
+
     match "images/*" $ do
         route   idRoute
         compile copyFileCompiler
@@ -44,6 +47,13 @@ main = hakyll $ do
             >>= loadAndApplyTemplate "templates/default.html" ctx
             >>= relativizeUrls
 
+    match "wikis/*" $ do
+        route $ setExtension "html"
+        compile $ pandocCompiler
+            >>= loadAndApplyTemplate "templates/post.html" wikiCtx
+            >>= loadAndApplyTemplate "templates/default.html" wikiCtx
+            >>= relativizeUrls
+
     tagsRules tags $ \tag pattern -> do
         let customizedTag = customTag tag
         route idRoute
@@ -61,12 +71,44 @@ main = hakyll $ do
                 >>= loadAndApplyTemplate "templates/default.html" tagsCtx
                 >>= relativizeUrls
 
+    tagsRules wikiTags $ \tag pattern -> do
+        let customizedTag = customTag tag
+        route idRoute
+        compile $ do
+            let order = case sortOrder customizedTag of
+                            RecentFirst -> recentFirst
+                            RecentLast -> chronological
+            posts <- order =<< loadAll pattern
+            let tagsCtx = context customizedTag `mappend`
+                          constField "title" (title customizedTag) `mappend`
+                          listField "posts" ctx (return posts) `mappend`
+                          defaultContext
+            makeItem ""
+                >>= loadAndApplyTemplate (template customizedTag) tagsCtx
+                >>= loadAndApplyTemplate "templates/default.html" tagsCtx
+                >>= relativizeUrls
+
+
     create ["archive.html"] $ do
         route idRoute
         compile $ do
             posts <- recentFirst =<< loadAll "posts/*"
             let archiveCtx =
                     listField "posts" ctx (return posts) `mappend`
+                    constField "title" "Archives"            `mappend`
+                    defaultContext
+
+            makeItem ""
+                >>= loadAndApplyTemplate "templates/archive.html" archiveCtx
+                >>= loadAndApplyTemplate "templates/default.html" archiveCtx
+                >>= relativizeUrls
+
+    create ["wikis.html"] $ do
+        route idRoute
+        compile $ do
+            posts <- recentFirst =<< loadAll "wikis/*"
+            let archiveCtx =
+                    listField "posts" wikiCtx (return posts) `mappend`
                     constField "title" "Archives"            `mappend`
                     defaultContext
 
@@ -104,7 +146,8 @@ main = hakyll $ do
        compile $ do
          posts <- recentFirst =<< loadAll "posts/*"
          pages <- loadAll "pages/*"
-         let allPosts = (return (posts ++ pages))
+         wikis <- loadAll "wikis/*"
+         let allPosts = (return (posts ++ pages ++ wikis))
          let sitemapCtx = mconcat
                           [ listField "entries" ctx allPosts
                           , defaultContext
