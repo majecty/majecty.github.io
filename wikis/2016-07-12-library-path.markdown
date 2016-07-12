@@ -1,7 +1,7 @@
 ---
 title: shared library를 어떻게 찾는가
 author: 주형
-tags: dynamic link
+tags: dynamic link, shared library
 ---
 
 # Shared Library란
@@ -13,7 +13,7 @@ static library와 대응되는 말. static library는 링크할 때 라이브러
 * 라이브러리가 빌드될 때 포함되지 않기 때문에 빌드 결과물의 용량이 줄어든다.
 * 다시 빌드하지 않고 라이브러리 업데이트가 가능하다.
 
-## Sahred Library의 일반적인 사용법
+## Shared Library의 일반적인 사용법
 
 /lib 이나 /usr/local/lib이나 /usr/lib 같은 곳에 라이브러리를 설치한다. shared library를 필요로하는 프로그램을 실행시킬 때 이 표준 라이브러리에서 사용한다.
 
@@ -66,3 +66,5 @@ Load command 16
 * [Debian에서 Rpath처리하기](https://wiki.debian.org/RpathIssue)
 
 * [OS x rpath 사용 예시](https://github.com/conda/conda-build/issues/279)
+
+* [install name, \@executable_path, \@loader_path, \@rapth에 대한 설명](https://www.mikeash.com/pyblog/friday-qa-2009-11-06-linking-and-install-names.html)
