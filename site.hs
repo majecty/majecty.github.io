@@ -186,8 +186,6 @@ data CustomTag = CustomTag {
       sortOrder :: SortOrder
   }
 
-defaultTag tag = CustomTag "templates/tag.html" (tag ++ " 태그가 붙은 글들") mempty RecentFirst
-
 customTag :: String -> CustomTag
 customTag tag@"2016-06-07-foldr-presentation" = (defaultTag tag) {
         template = "customTags/2016-06-07-foldr-presentation.html",
@@ -197,3 +195,6 @@ customTag tag@"2016-06-07-foldr-presentation" = (defaultTag tag) {
     }
 customTag "haskell" = (defaultTag "haskell") { title = "하스켈 글들", context = constField "home" "haskell" }
 customTag tag = defaultTag tag
+
+defaultTag tag = CustomTag "templates/tag.html" (tag ++ " 태그가 붙은 글들") mempty RecentFirst
+
