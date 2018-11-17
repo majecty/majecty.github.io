@@ -20,7 +20,7 @@ tags: unity, game
 
 이 정도 스펙은 간단합니다. 다음과 같은 방식으로 만들 수 있겠네요.
 
-```csharp
+```cs
 IEnumerator Run()
 {
     for (int i = 0; i < texts.Count; i += 1)
@@ -49,7 +49,7 @@ IEnumerator PlayLine(string text)
 
 이를 위의 코드에 추가하면 다음과 같이 됩니다.
 
-```csharp
+```cs
 enum State
 {
     Playing,
@@ -105,7 +105,7 @@ public void Skip()
 
 이렇게 만든 대화 시스템은 유니티 UI에서 지원하는 RichText를 잘 지원하지 못합니다. RichText를 쉽게 쓸 수 있도록 제가 만든 간단한 라이브러리가 있습니다. 이 라이브러리를 쓰면 두 줄을 바꾸는 것으로 RichText를 지원할 수 있습니다. [이 링크](https://github.com/majecty/Unity3dRichTextHelper)에서 확인하세요.
 
-```csharp
+```cs
 for (int i = 0; i < text.RichTextLength() + 1; i += 1)
 {
     yield return new WaitForSeconds(0.05f);
