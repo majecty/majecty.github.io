@@ -1,7 +1,7 @@
 ---
 title: 코루틴으로 간단하게 대화창 만들기
 author: 주형
-tags: unity3d, unity, game
+tags: unity, game
 ---
 
 코루틴을 사용하면 기본적인 대화창을 직관적으로 구현할 수 있습니다.
