@@ -1,6 +1,7 @@
 ---
 title: 코루틴으로 간단하게 대화창 만들기
 author: 주형
+tags: unity3d, unity, game
 ---
 
 코루틴을 사용하면 기본적인 대화창을 직관적으로 구현할 수 있습니다.
@@ -20,24 +21,24 @@ author: 주형
 이 정도 스펙은 간단합니다. 다음과 같은 방식으로 만들 수 있겠네요.
 
 ```csharp
-    IEnumerator Run()
+IEnumerator Run()
+{
+    for (int i = 0; i < texts.Count; i += 1)
     {
-        for (int i = 0; i < texts.Count; i += 1)
-        {
-            yield return PlayLine(texts[i]);
-        }
+        yield return PlayLine(texts[i]);
+    }
+}
+
+IEnumerator PlayLine(string text)
+{
+    for (int i = 0; i < text.Length() + 1; i += 1)
+    {
+        yield return new WaitForSeconds(0.05f);
+        uiText.text = text.Substring(0, i);
     }
 
-    IEnumerator PlayLine(string text)
-    {
-        for (int i = 0; i < text.Length() + 1; i += 1)
-        {
-            yield return new WaitForSeconds(0.05f);
-            uiText.text = text.Substring(0, i);
-        }
-
-        yield return new WaitForSeconds(3f);
-    }
+    yield return new WaitForSeconds(3f);
+}
 ```
 
 하지만 대부분의 유저는 게임의 대화창을 읽고 싶어 하지 않습니다. 최대한 빨리 대화창을 넘기고 게임을 하고 싶어 하죠. 그렇다고 대화창 전체를 스킵시켜버리면 중요한 내용을 알지 못하게 되어 게임 내에서 헤매게 됩니다. 따라서 성급한 유저를 위하여 빨리 진행하되 최소한의 내용은 숙지할 수 있을 정도의 시간 동안은 내용을 보여주어야 합니다.
@@ -49,52 +50,51 @@ author: 주형
 이를 위의 코드에 추가하면 다음과 같이 됩니다.
 
 ```csharp
-    enum State
+enum State
+{
+    Playing,
+    PlayingSkipping,
+}
+
+IEnumerator Run()
+{
+    for (int i = 0; i < texts.Count; i += 1)
     {
-        Playing,
-        PlayingSkipping,
+        yield return PlayLine(texts[i]);
+    }
+}
+
+IEnumerator PlayLine(string text)
+{
+    for (int i = 0; i < text.Length() + 1; i += 1)
+    {
+        if (state == State.PlayingSkipping)
+        {
+            uiText.text = text;
+            state = State.Playing;
+            break;
+        }
+        yield return new WaitForSeconds(0.05f);
+        uiText.text = text.Substring(0, i);
     }
 
-    IEnumerator Run()
+    yield return new WaitForSeconds(0.5f);
+
+    for (int i=0; i<25; i+=1)
     {
-        for (int i = 0; i < texts.Count; i += 1)
+        yield return new WaitForSeconds(0.1f);
+        if (state == State.PlayingSkipping)
         {
-            yield return PlayLine(texts[i]);
+            state = State.Playing;
+            break;
         }
     }
+}
 
-    IEnumerator PlayLine(string text)
-    {
-        for (int i = 0; i < text.Length() + 1; i += 1)
-        {
-            if (state == State.PlayingSkipping)
-            {
-                uiText.text = text;
-                state = State.Playing;
-                break;
-            }
-            yield return new WaitForSeconds(0.05f);
-            uiText.text = text.Substring(0, i);
-        }
-
-        yield return new WaitForSeconds(0.5f);
-
-        for (int i=0; i<25; i+=1)
-        {
-            yield return new WaitForSeconds(0.1f);
-            if (state == State.PlayingSkipping)
-            {
-                state = State.Playing;
-                break;
-            }
-        }
-    }
-    
-    public void Skip()
-    {
-        state = State.PlayingSkipping;
-    }
-
+public void Skip()
+{
+    state = State.PlayingSkipping;
+}
 ```
 
 위 코드의 특이한 점은 유저가 skip을 눌렀을 때 단순히 state변수만을 수정한다는 점입니다. 이렇게 함으로써 유저가 여러 번 스킵을 불러도 안전하며, 코드의 실행 흐름이 `PlayLine`함수 안에 밀집되기 때문에 코드를 관리하기도 쉽습니다.
@@ -106,10 +106,9 @@ author: 주형
 이렇게 만든 대화 시스템은 유니티 UI에서 지원하는 RichText를 잘 지원하지 못합니다. RichText를 쉽게 쓸 수 있도록 제가 만든 간단한 라이브러리가 있습니다. 이 라이브러리를 쓰면 두 줄을 바꾸는 것으로 RichText를 지원할 수 있습니다. [이 링크](https://github.com/majecty/Unity3dRichTextHelper)에서 확인하세요.
 
 ```csharp
-        for (int i = 0; i < text.RichTextLength() + 1; i += 1)
-        {
-            yield return new WaitForSeconds(0.05f);
-            uiText.text = text.RichTextSubString(i);
-        }
-
+for (int i = 0; i < text.RichTextLength() + 1; i += 1)
+{
+    yield return new WaitForSeconds(0.05f);
+    uiText.text = text.RichTextSubString(i);
+}
 ```
