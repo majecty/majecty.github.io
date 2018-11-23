@@ -109,11 +109,11 @@ main = hakyll $ do
             posts <- recentFirst =<< loadAll "wikis/*"
             let archiveCtx =
                     listField "posts" wikiCtx (return posts) `mappend`
-                    constField "title" "Archives"            `mappend`
+                    constField "title" "주제별 문서들"            `mappend`
                     defaultContext
 
             makeItem ""
-                >>= loadAndApplyTemplate "templates/archive.html" archiveCtx
+                >>= loadAndApplyTemplate "templates/wikis.html" archiveCtx
                 >>= loadAndApplyTemplate "templates/default.html" archiveCtx
                 >>= relativizeUrls
 
