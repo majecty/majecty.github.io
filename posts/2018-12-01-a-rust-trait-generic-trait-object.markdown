@@ -14,7 +14,7 @@ Rust에서 여러 타입의 코드에 대해서 중복되는 기능이 필요한
 
 Trait 의 정의는 trait과 연결된 함수들을 정의하며, Trait을 구현하는 struct들은 해당 함수들을 구현해야한다. Rust generic에 Trait바운드를 걸어서 Trait을 구현한 타입들만을 위한 코드를 작성하여 코드의 중복을 줄일 수 있다.
 
-**trait의 impl**
+**Trait의 impl**
 ```rust
     struct Player {}
     
