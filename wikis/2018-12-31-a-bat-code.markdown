@@ -1,0 +1,46 @@
+---
+title: Rust bat 코드 분석
+author: 주형
+tags: rust, bat, CLI, code
+---
+
+# 하는 일
+
+bat은 더 나은 버전의 cat으로 syntax highlighting을 지원한다.
+
+# 진입점
+
+## main.rs
+
+### main()
+
+`run()`을 실행시키고 결과에 따라 error를 프린트한 뒤 exit code와 함께 종료
+
+### run()
+
+subcommand가 있다면 subcommand를 실행, subcommand가 없다면 run_controller를 실행
+
+### subcommand
+
+- cache
+- list-languages
+- list-themes
+- config-file
+
+### run_controller()
+
+HighlightingAssets과 Controller를 생성한 뒤 `Controller::run(&self)` 실행
+
+## controller.rs
+
+### Controller::run(&self)
+
+pager를 부를 지 결정, output type 결정, 각 file들에 대해서 for문을 돌면서 `Controller::print_file(&self)` 호출
+
+### Controller::print_file(&self)
+
+`Printer::print_header(&self)`, `self::print_file_ranges(&self)`, `Printer::print_footer()`
+
+### Controller::print_file_ranges(&self)
+
+한 줄 한 줄 읽어가면서 원하는 range에 대해 출력. 원하는 범위의 앞인 경우 Printer::print_line(&self, true) 를 호출. 원하는 범위인 경우 Printer::print_line(&self, false) 호출. 원하는 범위가 끝나면 break
