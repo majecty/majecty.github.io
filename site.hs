@@ -4,7 +4,7 @@
 import           Data.Monoid (mappend)
 import           Hakyll
 
-host = "https://blog.majecty.com"
+hostName = "https://blog.majecty.com"
 
 feedConfiguration :: FeedConfiguration
 feedConfiguration = FeedConfiguration
@@ -67,7 +67,7 @@ main = hakyll $ do
                           listField "posts" ctx (return posts) `mappend`
                           defaultContext
             makeItem ""
-                >>= loadAndApplyTemplate (template customizedTag) tagsCtx
+                >>= loadAndApplyTemplate (customTagTemplate customizedTag) tagsCtx
                 >>= loadAndApplyTemplate "templates/default.html" tagsCtx
                 >>= relativizeUrls
 
@@ -84,7 +84,7 @@ main = hakyll $ do
                           listField "posts" ctx (return posts) `mappend`
                           defaultContext
             makeItem ""
-                >>= loadAndApplyTemplate (template customizedTag) tagsCtx
+                >>= loadAndApplyTemplate (customTagTemplate customizedTag) tagsCtx
                 >>= loadAndApplyTemplate "templates/default.html" tagsCtx
                 >>= relativizeUrls
 
@@ -172,7 +172,7 @@ main = hakyll $ do
 --------------------------------------------------------------------------------
 postCtx :: Tags -> Context String
 postCtx tags =
-    constField "host" host `mappend`
+    constField "host" hostName `mappend`
     tagsField "tags" tags `mappend`
     dateField "date" "%B %e, %Y" `mappend`
     defaultContext
@@ -180,7 +180,7 @@ postCtx tags =
 data SortOrder = RecentFirst | RecentLast
 
 data CustomTag = CustomTag {
-      template :: Identifier,
+      customTagTemplate :: Identifier,
       title :: String,
       context :: Context String,
       sortOrder :: SortOrder
@@ -188,7 +188,7 @@ data CustomTag = CustomTag {
 
 customTag :: String -> CustomTag
 customTag tag@"2016-06-07-foldr-presentation" = (defaultTag tag) {
-        template = "customTags/2016-06-07-foldr-presentation.html",
+        customTagTemplate = "customTags/2016-06-07-foldr-presentation.html",
         title = "foldr 발표를 위한 글들",
         context = constField "home" "haskell",
         sortOrder = RecentLast
