@@ -1,0 +1,56 @@
+---
+title: gpg 개요
+author: 주형
+tags: gpg
+---
+
+gpg는 대칭키 암호화, 혹은 비대칭키 암호화를 사용하여 임의의 데이터를 서명, 암호화, 복호화를 하는 도구이다.
+
+## 키 관리
+
+### 키 생성
+
+`gpg --full-generate-key`
+
+### 키 내보내기
+
+public key 내보내기
+
+`gpg --export --armor alice@example.com`
+
+private key 내보내기
+
+`gpg --export-secret-keys --armor alice@example.com`
+
+### 키 불러오기
+
+`gpg --import majecty.gpg`
+
+## 서명
+
+### 서명하기
+
+`gpg --clearsign doc.txt`
+
+위 명령어를 사용하면 원본 메시지와 서명이 동시에 포함된 `doc.txt.asc` 파일이 생성된다.
+
+### 검층하기
+
+`gpg --verify doc.txt.asc`
+
+위의 서명 방식으로 만들어낸 서명이 정확한지 검증한다.
+
+## 암호화
+
+### 대칭키 암호화
+
+### 대칭키 복호화
+
+### 비대칭키 암호화
+
+### 비대칭키 복호화
+
+## 참고자료.
+
+* [Github GPG key 만들기](https://help.github.com/articles/generating-a-new-gpg-key/)
+* [tldr gpg 문서](https://github.com/tldr-pages/tldr/blob/master/pages/common/gpg.md)
