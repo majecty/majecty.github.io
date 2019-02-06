@@ -4,6 +4,7 @@ body {
     margin: 0px auto 0px auto;
     max-width: 800px;
     min-width: 350px;
+    font-family: 'Nanum Gothic', sans-serif;
 }
 
 div#header {
@@ -47,7 +48,7 @@ h1 {
 }
 
 h2 {
-    font-size: 22px;
+    font-size: 18px;
 }
 
 div.info {
