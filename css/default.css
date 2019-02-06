@@ -1,6 +1,6 @@
 body {
-    color: black;
-    font-size: 16px;
+    /* color: black; */
+    /* font-size: 16px; */
     margin: 0px auto 0px auto;
     max-width: 800px;
     min-width: 350px;
@@ -43,11 +43,11 @@ div#footer {
     text-align: right;
 }
 
-h1 {
+#content h1 {
     font-size: 24px;
 }
 
-h2 {
+#content h2 {
     font-size: 18px;
 }
 
@@ -55,4 +55,12 @@ div.info {
     color: #555;
     font-size: 14px;
     font-style: italic;
+}
+
+code {
+    font-family: 'Nanum Gothic Coding', monospace !important;
+}
+
+.sourceCode a {
+    color: black;
 }
