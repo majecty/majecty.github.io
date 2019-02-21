@@ -9,7 +9,7 @@ systemd를 사용하여 유저별로 서비스를 추가할 수 있다. 설정�
 local에 unit 추가하기
 ----------------------
 
-시스템 전역 서비스는 `/etc/systemd/user/`에, 유저의 서비스는 `~/.config/systemd/user/` 작성한다. 
+시스템 전역 서비스는 `/etc/systemd/user/`에, 유저의 서비스는 `~/.config/systemd/user/`에 작성한다. 
 
 예시 unit 파일
 --------------
