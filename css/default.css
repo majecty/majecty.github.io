@@ -51,6 +51,10 @@ div#footer {
     font-size: 18px;
 }
 
+#content h3 {
+    font-size: 16px;
+}
+
 div.info {
     color: #555;
     font-size: 14px;
