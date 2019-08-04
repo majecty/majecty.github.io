@@ -25,7 +25,7 @@ Set-PSReadLineOption -EditMode Emacs
 
 알고싶은 cmdlet에 대해 `help` cmdlet를 사용하여 정보를 얻는다.
 
-```help get-childitem```
+```help Get-ChildItem```
 
 알고싶은 cmdlet의 부분만 검색할 수 있다.
 
@@ -46,7 +46,7 @@ help Where-Object -Category Alias
 
 내가 알고있는 명령어의 alias를 알고 싶을 때
 
-```Get-Alias -Definition set-location```
+```Get-Alias -Definition Set-Location```
 
 
 # PowerShell 변수
@@ -75,7 +75,7 @@ $y.Path
 오브젝트의 프로퍼티/메쏘드들 출력
 
 ```powershell
-get-member -InputObject $x
+Get-Member -InputObject $x
 ```
 
 # PowerShell 파이프
@@ -84,7 +84,7 @@ PowerShell은 unix의 Shell과는 다르게 Object를 파이프를 통해 건넨
 
 ```powershell
 $x | write
-$x | get-member
+$x | Get-Member
 ```
 
 ## ForEach-Object
@@ -92,13 +92,13 @@ $x | get-member
 `ForEach-Object`를 사용하여 파이프로 받은 오브젝트(들)에 대해 원하는 명령을 실행할 수 있다.
 
 ```powershell
-get-location | foreach-object path
+Get-Location | ForEach-Object path
 ```
 
 `ForEach-Object`는 %로 대체할 수 있다.
 
 ```powershell
-get-location | % path
+Get-Location | % path
 ```
 
 `ForEach-Object`는 인자로 중괄호로 감싸여진 Script Block을 받을 수 있다. 이 때 $_ 변수가 각 엘리먼트이다.
@@ -112,7 +112,7 @@ get-location | % path
 `Where-Object`를 사용하여 리스트의 원하는 것만 골라낼 수 있다.
 
 ```powershell
-1,2,3 | where-object { $_ % 2 -eq 0 }
+1,2,3 | Where-Object { $_ % 2 -eq 0 }
 ```
 
 `Where-Object`는 `?` 로 alias되어있다.
