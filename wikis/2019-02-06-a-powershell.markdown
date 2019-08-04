@@ -121,6 +121,9 @@ Get-Location | % path
 1,2,3 | ? { $_ % 2 -eq 0 }
 ```
 
+```powershell
+Get-ChildItem | ? { $_.Name -like '*json' }
+```
 
 # 참고자료
 
