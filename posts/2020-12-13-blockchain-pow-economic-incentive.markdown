@@ -1,5 +1,5 @@
 ---
-title: 블록체의 PoW와 경제적인 인센티브
+title: 블록체인의 PoW와 경제적인 인센티브
 author: 주형
 tags: blockchain, bitcoin, PoW
 ---
