@@ -104,5 +104,6 @@ Prevote 표를 모았을 때 전체 위원의 2/3 이상이 해당 블록에 찬
 하셨던 걸로 기억한다.)
 테스트 네트워크 돌리고, 문제 발생하면 여러 노드의 로그들 분석하고, 버그를 고치는 과정을 꽤나 많이 반복했었다. 몇 달의 과정을 거친 뒤 지금은 탈 없이 동작하고 있다.
 
-https://github.com/codechain-io/codechain
+내가 참여했던 코드체인의 GitHub 레포:
+[https://github.com/codechain-io/codechain](https://github.com/codechain-io/codechain)
 
