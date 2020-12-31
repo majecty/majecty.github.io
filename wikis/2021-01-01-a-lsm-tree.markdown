@@ -44,7 +44,7 @@ SST 파일을 합치는 과정은 merge sort에서 merge하는 것과 비슷하�
 이 Compaction를 잘 해야 O(log n)에 데이터를 조회할 수 있다.
 Rocks DB는 두 가지 Compaction 방법을 쓴다. 그 중 Leveld Compaction[^3]의 동작원리를 보자.
 
-[^3]: https://github.com/facebook/rocksdb/wiki/Leveled-Compaction
+[^3]: [https://github.com/facebook/rocksdb/wiki/Leveled-Compaction](https://github.com/facebook/rocksdb/wiki/Leveled-Compaction)
 
 Leveld Compaction은 SST 파일들을 여러 레벨로 구분한다. 한 레벨의 SST 파일들은 전체 key 범위를 커버한다.
 한 레벨의 SST 파일들은 서로 키가 겹치지 않는다. 높은 레벨은 낮은 레벨보다 n배 더 많은 크기의 값을 가진다.
@@ -72,5 +72,5 @@ RocksDB는 이 "없는 키 조회과정"을 빠르게 만들기 위해서 Bloom 
 일종의 해시테이블로, 확률적으로 해당 키가 없음을 알려준다. Bloom Filter가 키가 있다고 하면
 정말로 키가 있을 수도 없을 수도 있다. Bloom Filter가 키가 없다고 하면 정말로 없다.
 
-[^5]: https://github.com/facebook/rocksdb/wiki/RocksDB-Bloom-Filter
+[^5]: [https://github.com/facebook/rocksdb/wiki/RocksDB-Bloom-Filter](https://github.com/facebook/rocksdb/wiki/RocksDB-Bloom-Filter)
 
