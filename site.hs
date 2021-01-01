@@ -9,8 +9,8 @@ hostName = "https://blog.majecty.com"
 feedConfiguration :: FeedConfiguration
 feedConfiguration = FeedConfiguration
   {
-    feedTitle = "하스켈과 게임개발에 관한 블로그 글들",
-    feedDescription = "하스켈과 게임개발에 대해서 공부한 것, 경험한 것들을 정리했습니다.",
+    feedTitle = "하스켈과 게임개발, 블록체인에 관한 블로그 글들",
+    feedDescription = "하스켈과 게임개발, 블록체인에 대해서 공부한 것, 경험한 것들을 정리했습니다.",
     feedAuthorName = "주형",
     feedAuthorEmail = "majecty+feed@gmail.com",
     feedRoot = "https://blog.majecty.com"
