@@ -4,15 +4,20 @@ author: 주형
 tags: systemd, daemon
 ---
 
-systemd를 사용하여 유저별로 서비스를 추가할 수 있다. 설정에 따라 유저의 로그인할 때 실행되게 하거나 서버가 시작할 때 시작되도록 정할 수 있다.
+systemd를 사용하여 유저별로 서비스를 추가할 수 있다. 설정에 따라
+유저의 로그인할 때 실행되게 하거나 서버가 시작할 때 시작되도록 정할 수
+있다.
 
 local에 unit 추가하기
 ----------------------
 
-시스템 전역 서비스는 `/etc/systemd/user/`에, 유저의 서비스는 `~/.config/systemd/user/`에 작성한다. 
+시스템 전역 서비스는 `/etc/systemd/user/`에, 유저의 서비스는
+`~/.config/systemd/user/`에 작성한다.
 
 예시 unit 파일
 --------------
+
+unit 파일은 보통 .service 확장자로 끝난다.
 
 ```
 [Unit]
@@ -44,7 +49,6 @@ enable된 유닛들만이 자동으로 실행된다. 자동 실행을 끄고 싶
 
 `systemctl --user start myunit.service`
 
-
 기타 systemd 명령들
 ---------------------------------
 
@@ -55,7 +59,6 @@ enable된 유닛들만이 자동으로 실행된다. 자동 실행을 끄고 싶
 현재 상태 확인:
 
 `systemctl --user status myunit.service`
-
 
 서비스가 항상 실행되도록 하기
 ----------------------------
@@ -70,7 +73,6 @@ enable된 유닛들만이 자동으로 실행된다. 자동 실행을 끄고 싶
 `journalctl`를 사용하여 내가 생성한 서비스의 로그를 확인할 수 있다.
 
 `journalctl --user-unit myunit.service`
-
 
 참고자료
 --------
