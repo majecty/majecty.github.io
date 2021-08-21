@@ -16,6 +16,8 @@ feedConfiguration = FeedConfiguration
     feedRoot = "https://blog.majecty.com"
   }
 
+allPostsPat = "posts/*" .&&. hasNoVersion
+
 --------------------------------------------------------------------------------
 main :: IO ()
 main = hakyll $ do
@@ -39,7 +41,7 @@ main = hakyll $ do
             >>= loadAndApplyTemplate "templates/default.html" defaultContext
             >>= relativizeUrls
 
-    match "posts/*" $ do
+    match allPostsPat $ do
         route $ setExtension "html"
         compile $ pandocCompiler
             >>= loadAndApplyTemplate "templates/post.html"    ctx
@@ -92,7 +94,7 @@ main = hakyll $ do
     create ["archive.html"] $ do
         route idRoute
         compile $ do
-            posts <- recentFirst =<< loadAll "posts/*"
+            posts <- recentFirst =<< loadAll allPostsPat
             let archiveCtx =
                     listField "posts" ctx (return posts) `mappend`
                     constField "title" "Archives"            `mappend`
@@ -130,7 +132,7 @@ main = hakyll $ do
     match "index.html" $ do
         route idRoute
         compile $ do
-            posts <- recentFirst =<< loadAll "posts/*"
+            posts <- recentFirst =<< loadAll allPostsPat
             let indexCtx =
                     listField "posts" ctx (return posts) `mappend`
                     constField "title" "Home"                `mappend`
@@ -144,7 +146,7 @@ main = hakyll $ do
     create ["sitemap.xml"] $ do
        route   idRoute
        compile $ do
-         posts <- recentFirst =<< loadAll "posts/*"
+         posts <- recentFirst =<< loadAll allPostsPat
          pages <- loadAll "pages/*"
          wikis <- loadAll "wikis/*"
          let allPosts = (return (posts ++ pages ++ wikis))
@@ -165,8 +167,12 @@ main = hakyll $ do
       compile $ do
           let feedCtx = ctx `mappend` bodyField "description"
           posts <- fmap (take 10) . recentFirst =<<
-            loadAllSnapshots "posts/*" "content"
+            loadAllSnapshots allPostsPat "content"
           renderAtom feedConfiguration feedCtx posts
+
+    version "redirects" $ createRedirects [
+        ("posts/2021-07-17-b-undrstanding-gradle-2.html", "2021-07-17-b-understanding-gradle-2.html")
+      ]
 
 
 --------------------------------------------------------------------------------
