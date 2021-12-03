@@ -82,3 +82,9 @@ public class EventLoopExample {
 
 nio로 non blocking IO를 직접 하는 건 꽤 귀찮고, Netty를 사용하면 좀 더편하게 코
 드를 작성할 수 있다.
+
+## 참고
+
+- 네티의 쓰레드 모델은 잘 설명된 공식 문서가 없다. 대신
+  [Netty in Action](https://www.amazon.com/Netty-Action-Norman-Maurer-ebook-dp-B0977YYX1C/dp/B0977YYX1C/ref=mt_other?_encoding=UTF8&me=&qid=)책
+  을 보면 잘 설명되어 있다.
