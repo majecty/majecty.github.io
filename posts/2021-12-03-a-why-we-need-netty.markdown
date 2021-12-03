@@ -5,6 +5,10 @@ tags: java, netty
 summary: Netty를 사용하면 편하게 non blocking IO를 할 수 있다.
 ---
 
+회사에서 동료분들과
+[Java Non blocking IO 라이브러리를 재구현해보는 스터디](https://github.com/zeroFruit/el)를
+하고있다. 그 과정에서 Netty를 공부한 내용을 정리한다.
+
 ## nio는 불편해
 
 Java의 nio를 사용해서 직접 non blocking IO 코드를 작성하는 건 불편하다. Java의
