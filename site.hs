@@ -27,7 +27,7 @@ main = hakyll $ do
     wikiTags <- buildTags "wikis/*" (fromCapture "wikiTags/*.html")
     let wikiCtx = postCtx wikiTags
 
-    match "images/*" $ do
+    match "images/**" $ do
         route   idRoute
         compile copyFileCompiler
 
