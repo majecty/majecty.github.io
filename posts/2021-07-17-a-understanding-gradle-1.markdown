@@ -4,6 +4,10 @@ author: 주형
 tags: java, gradle, groovy, understanding-gradle
 ---
 
+* [build.gradle 이해하기 1 - Gradle은 무엇인가](./2021-07-17-a-understanding-gradle-1.html)
+* [build.gradle 이해하기 2 - Gradle task](./2021-07-17-b-understanding-gradle-2.html)
+* [build.gradle 이해하기 3 - Groovy 문법 이해](./2021-08-22-a-understanding-gradle-3.html)
+
 build.gradle은 매우 쉬워보이고, 간단한 일을 간단하게 할
 수 있다.  라이브러리 추가도 해보고, 삭제도 해 본 뒤,
 Gradle 별 거 아니네 생각하기 쉽다.  하지만 build.gradle이 한

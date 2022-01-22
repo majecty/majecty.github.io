@@ -4,6 +4,10 @@ author: 주형
 tags: java, gradle, groovy, understanding-gradle
 ---
 
+* [build.gradle 이해하기 1 - Gradle은 무엇인가](./2021-07-17-a-understanding-gradle-1.html)
+* [build.gradle 이해하기 2 - Gradle task](./2021-07-17-b-understanding-gradle-2.html)
+* [build.gradle 이해하기 3 - Groovy 문법 이해](./2021-08-22-a-understanding-gradle-3.html)
+
 이 글에서는 Java 프로젝트를 빌드하기 위해 많이 사용하는 Gradle의 기본 개념을 익힌다.
 
 ## Task의 개념

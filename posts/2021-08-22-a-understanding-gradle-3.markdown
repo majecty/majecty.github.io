@@ -4,6 +4,10 @@ author: 주형
 tags: java, gradle, groovy, understanding-gradle
 ---
 
+* [build.gradle 이해하기 1 - Gradle은 무엇인가](./2021-07-17-a-understanding-gradle-1.html)
+* [build.gradle 이해하기 2 - Gradle task](./2021-07-17-b-understanding-gradle-2.html)
+* [build.gradle 이해하기 3 - Groovy 문법 이해](./2021-08-22-a-understanding-gradle-3.html)
+
 build.gradle에서 쓰이는 Groovy 문법을 이해하면 build.gradle을 더 깊게 이해할 수 있다.
 프로그래밍 언어들 문법이 거기서 거기긴 하지만 Groovy는 조금 특이한 문법을 가지고 있다.
 알면 간단하지만 모르면 헷갈리기 때문에 한 번 읽고 이해해두면 이해해두면 좋다.
