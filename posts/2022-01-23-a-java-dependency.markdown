@@ -2,6 +2,7 @@
 title: Java에서는 라이브러리 쓰기가 무섭다
 author: 주형
 tags: java, dependency
+summary: 자바에서 라이브러리를 사용할 때 고려해야하는 점이 많다. 다들 Spring 쓰는 데에는 이유가 있다.
 ---
 
 새로운 언어 환경을 보다 보면 라이브러리가 어떻게 관리되는지 보는 게 재밌다. 내가
@@ -74,13 +75,15 @@ Java는 SemVer를 쓰지 않는다. 애초에 어떤 라이브러리를 가져�
 
 ### Shading
 
-라이브러리 제작자는 의도적이든 아니든 이전의 버전에서 공개한 인터페이스를
-깨뜨리게 된다. 이 경우 문제를 해결하기가 매우 힘들다. 이 때 문제를 회피하는 방법
-중 하나로 [maven shade plugin](https://maven.apache.org/plugins/maven-shade-plugin/)이 있다. shade plugin을 사용하면 특정 라이브러리들의 package name을 바꿀 수 있다. 이렇게
-라이브러리의 package를 다르게 하면 여러 버전의 라이브러리를 함께 사용할 수 있다.
+라이브러리 제작자는 의도적이든 아니든 이전의 버전에서 공개한
+인터페이스를 깨뜨리게 된다. 이 경우 문제를 해결하기가 매우 힘들다. 이
+때 문제를 회피하는 방법 중 하나로 [maven shade plugin](https://maven.apache.org/plugins/maven-shade-plugin/)이 있다.
+shade plugin을 사용하면 특정 라이브러리들의 package name을 바꿀 수
+있다. 이렇게 라이브러리의 package를 다르게 하면 여러 버전의
+라이브러리를 함께 사용할 수 있다.
 
-Elasticsearch의 [To shade or not to shade](https://www.elastic.co/kr/blog/to-shade-or-not-to-shade) 블로그 글을 읽으면
-어떤 경우에 shade를 쓰는지 더 잘 이해할 수 있다.
+Elasticsearch의 [To shade or not to shade](https://www.elastic.co/kr/blog/to-shade-or-not-to-shade) 블로그
+글을 읽으면 어떤 경우에 shade를 쓰는지 더 잘 이해할 수 있다.
 
 ### 라이브러리를 작성하는 사람을 믿을 수 있는가
 
@@ -97,3 +100,12 @@ Rust나 Node.js는 Java에 비해 쉽게 라이브러리를 쓸 수 있다. 라�
 간단한 함수도 라이브러리를 가져다 쓰기도 한다. Java는 오픈소스 라이브러리 갯수도
 적고, 하나의 라이브러리가 많은 일을 할 때가 많다. 아직 신뢰가 쌓이지 않은
 라이브러리를 잘못 사용했다가 큰 고통을 받을 수 있기 때문인 거 같다.
+
+### 이 특징이 코드에도 반영된다
+
+이렇게 라이브러리의 호환성이 중요하기 때문에 자바 코드를 작성할 때도
+이를 고려하게 된다. 되도록 노출된 클래스의 인터페이스를 깨지 않고도
+기능을 변경할 수 있는 방법을 많이 사용한다. 이에 대한 자세한 내용은
+다음 글에서 알아보자.
+
+[다음 글 - Java는 보수적이야](./2022-01-23-b-java-conservative-patterns.html)
