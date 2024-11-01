@@ -1,10 +1,10 @@
-git branch -f master
+git branch -f main
 stack run site clean
 stack run site build
 cp -a _site/. .
-git checkout master
+git checkout main
 git add .
 git commit -m 'Publish'
 git push origin develop
-git push origin master -f
+git push origin main -f
 git checkout develop
