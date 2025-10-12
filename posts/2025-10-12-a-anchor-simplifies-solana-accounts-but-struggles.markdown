@@ -105,15 +105,15 @@ pub struct InstructionAccounts<'info> {
 아래가 anchor 내부에서 optional한 타입을 처리하는 코드입니다. account 의 key가 pogram의 id를 넣어주면 None 으로 처리해주는 거였어요. 이 [링크](https://github.com/solana-foundation/anchor/blob/1ebbe58158d089a2a40b5e35ebead5a10db9090d/lang/src/accounts/option.rs#L46)에서 코드를 직접 보실 수 있습니다.
 
 ```rust
-        if accounts[0].key == program_id {
-            *accounts = &accounts[1..];
-            Ok(None)
-        } else {
-            // If the program_id doesn't equal the account key, we default to
-            // the try_accounts implementation for the inner type and then wrap that with
-            // Some. This should handle all possible valid cases.
-            T::try_accounts(program_id, accounts, ix_data, bumps, reallocs).map(Some)
-        }
+if accounts[0].key == program_id {
+	*accounts = &accounts[1..];
+	Ok(None)
+} else {
+	// If the program_id doesn't equal the account key, we default to
+	// the try_accounts implementation for the inner type and then wrap that with
+	// Some. This should handle all possible valid cases.
+	T::try_accounts(program_id, accounts, ix_data, bumps, reallocs).map(Some)
+}
 ```
 
 ### Anchor 를 어떻게 다루어야할까
