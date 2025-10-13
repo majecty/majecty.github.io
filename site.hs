@@ -226,5 +226,5 @@ customTag tag@"2016-06-07-foldr-presentation" = (defaultTag tag) {
 customTag "haskell" = (defaultTag "haskell") { title = "하스켈 글들", context = constField "home" "haskell" }
 customTag tag = defaultTag tag
 
-defaultTag tag = CustomTag "templates/tag.html" (tag ++ " 태그가 붙은 글들") mempty RecentFirst
+defaultTag tag = CustomTag "templates/tag.html" (tag ++ "에 대해 작성한 글들") mempty RecentFirst
 
