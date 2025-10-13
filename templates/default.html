@@ -59,7 +59,10 @@ ga('send', 'pageview');
             </div>
 
             <div id="content">
+                $if(isHome)$
+                $else$
                 <h1>$title$</h1>
+                $endif$
 
                 $body$
             </div>

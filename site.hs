@@ -136,6 +136,7 @@ main = hakyll $ do
             let indexCtx =
                     listField "posts" ctx (return posts) `mappend`
                     constField "title" "Home"                `mappend`
+                    constField "isHome" "true"            `mappend`
                     defaultContext
 
             getResourceBody
