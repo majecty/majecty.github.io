@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <meta property="og:type" content="website">
+        <meta property="og:title" content="주형 Blog - LSM Tree">
+        <meta property="og:image" content="https://blog.majecty.com/favicon_310.png">
+
+        <link rel="icon" type="image/png" href="../favicon_16.png" sizes="16x16">
+        <link rel="icon" type="image/png" href="../favicon_32.png" sizes="32x32">
+        <link rel="icon" type="image/png" href="../favicon_96.png" sizes="96x96">
+        <link rel="icon" type="image/png" href="../favicon_310.png" sizes="310x310">
+
+        <title>주형 Blog - LSM Tree</title>
+        <link rel="stylesheet" type="text/css" href="../css/default.css" />
+        <link rel="stylesheet" type="text/css" href="../css/syntax.css" />
+        <link rel="home" type="application/rss+xml" href="https://blog.majecty.com/atom.xml" />
+
+        <link href="//cdn.muicss.com/mui-0.9.41/css/mui.min.css" rel="stylesheet" type="text/css" />
+        <script src="//cdn.muicss.com/mui-0.9.41/js/mui.min.js"></script>
+
+        <link href="https://fonts.googleapis.com/css?family=Nanum+Gothic+Coding" rel="stylesheet"> 
+        <link href="https://fonts.googleapis.com/css?family=Nanum+Gothic" rel="stylesheet">
+        <script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-78778924-1', 'auto');
+ga('send', 'pageview');
+
+        </script>
+
+    </head>
+    <body class="mui-container">
+        <div style="margin:5px;">
+            <div id="header">
+                <div id="logo">
+                    
+                    <a href="../">주형 블로그</a>
+                    
+                </div>
+                <div id="navigation">
+                    
+                    <a href="../">Home</a>
+                    
+                    <a href="../contact.html">Contact</a>
+                    <a href="../wikis.html">Wiki</a>
+                </div>
+            </div>
+
+            <div id="content">
+                
+                <h1>LSM Tree</h1>
+                
+
+                <div class="info">
+    2021년 1월  1일에 씀
+</div>
+
+<div class="info">
+    
+    찾아보기: <a title="All pages tagged 'LSM Tree'." href="../wikiTags/LSM%20Tree.html" rel="tag">LSM Tree</a>, <a title="All pages tagged '자료구조'." href="../wikiTags/%EC%9E%90%EB%A3%8C%EA%B5%AC%EC%A1%B0.html" rel="tag">자료구조</a>
+    
+</div>
+
+<br />
+
+<p>RocksDB에서 사용하는 LSM Tree를 기준으로 공부하여 작성했다.</p>
+<p>LSM Tree는 B-Tree에 비해 쓰기 속도가 빠르다. 대신 읽기는 더 느리다.</p>
+<p>B-Tree에 비해서 LSM Tree는 꽤 복잡하다. 크게 봐서 3가지 방식으로 데이터를 관리한다.
+하나는 메모리에 있는 MemTable, 다른 하나는 메모리에 있는 데이터를 로그 형식으로 일렬로 적는
+WAL(Write ahead log), persistant하게 데이터를 보관하는 SST(Sorted String Table)이 있다.</p>
+<hr />
+<p>LSM-Tree는 데이터를 빠르게 쓰는데 진심이다. 어떤 세부사항을 보더라도 쓰기 속도를 빠르게 하겠다는
+결정이 눈에 보인다.</p>
+<p>첫 번째 노력은 MemTable과 WAL파일이다. 디스크에 가장 빠르게 데이터를 쓰는 방법은 뭘까.
+sequential하게 쓰는 것이다. 모든 쓰기 동작은 하나의 파일에 sequential하게 데이터들 적는다.
+당연히 sequential한 데이터는 읽기가 힘들기 때문에 WAL파일에 있는 데이터를 메모리에서 쉽게
+접근할 수 있게 MemTable을 사용한다.</p>
+<p>MemTable은 최근에 쓴 데이터들을 빠르게 읽는 캐시 역할을 한다. RocksDB는 MemTable에 Skip list를 사용한다.
+<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> Skip list는 O(log n)에 값을 읽을 수 있고, O(log n)에 값을 쓸 수 있다. 또한 동시에 값을 쓸 수 있다.</p>
+<p>두 번째 노력은 SST의 관리 방식에 있다. LSM Tree는 SST파일을 관리할 때 항상 sequential한 쓰기만 한다.
+random한 쓰기를 하지 않는다. sequential한 쓰기가 random 쓰기보다 빠르기 때문이다.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>
+MemTable과 WAL 파일에 쓴 데이터는 크기가 커지면 SST 파일을 만들어 디스크에 저장한다.</p>
+<p>LSM Tree에서 M은 Merge를 의미한다. Merge가 없을 때를 먼저 생각해보자.
+SST 파일은 key 기준으로 정렬되어 있다.
+SST 파일은 파일 안에 적힌 데이터의 시작 key와 끝 key의 정보가 있다.
+여러 SST 파일들 사이에 키 범위는 겹칠 수 있다. 따라서 적절한 merge를 하지 않는다면,
+하나의 키를 찾기 위해 모든 SST 파일을 열어봐야할 것이다.</p>
+<p>LSM Tree는 적절한 Merge 과정을(Compaction 이라고도 부른다) 통해서 SST 파일을 합친다.
+SST 파일을 합치는 과정은 merge sort에서 merge하는 것과 비슷하다.
+언제 어떤 SST 파일들을 골라서 merge할 것인가가 중요하다.
+이 Compaction를 잘 해야 O(log n)에 데이터를 조회할 수 있다.
+Rocks DB는 두 가지 Compaction 방법을 쓴다. 그 중 Leveld Compaction<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>의 동작원리를 보자.</p>
+<p>Leveld Compaction은 SST 파일들을 여러 레벨로 구분한다. 한 레벨의 SST 파일들은 전체 key 범위를 커버한다.
+한 레벨의 SST 파일들은 서로 키가 겹치지 않는다. 높은 레벨은 낮은 레벨보다 n배 더 많은 크기의 값을 가진다.
+데이터의 갯수가 _m_이라고 할 때 레벨의 갯수는 <em>log m</em> 이다.
+한 레벨의 SST 파일들끼리 키가 겹치지 않는 특징 때문에 데이터를 찾기 위해서 level 갯수 만큼만 쿼리하면 된다. 따라서 O(log n)의 시간 안에 데이터를 찾을 수 있다.</p>
+<p>Leveld Compaction은 다음과 같이 일어난다. 먼저 MemTable이 꽉 찼을 때 Level0에 SST파일들이 쌓인다. Level0만이 다른 Level들과는 다르게
+같은 레벨이어도 키가 겹칠 수 있다. Level0에 쌓인 SST파일들이 설정해두었던 한계를 넘으면 Level0의 SST 파일들과 범위가 겹치는
+Level1의 SST파일들을 합쳐서 새로운 SST 파일들을 만든다. 이 SST 파일들은 Level1에 속한다.
+이 과정으로 인해서 Level1에 있는 SST 파일들이 한계를 넘었다면, Level1의 일부 SST 파일들을 범위가 겹치는 Level2의 파일들과 합친다.
+이를 가장 마지막 Level까지 반복한다.<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a></p>
+<p>컴팩션과정에서 보는 것과 같이 SST파일들은 수정되지 않는다. 다음 레벨로 이동하면서 새로운 SST 파일을 만든다.</p>
+<hr />
+<p>LSM Tree의 약점은 조회다. 없는 키를 조회할 때가 최악의 시나리오다.
+메모리에서 한 번, 레벨 0에서 여러번, 그 이후 레벨 별 한 번씩 조회를 해서 전부 값을 찾을 수 없어야 해당 키가 없다고 알 수 있다.
+한 레벨 안에서 조회를 할 때도 다음 과정을 거친다. SST 파일 별 키 레인지를 통해 들어있을 가능성이 있는 SST 파일을 찾는다.
+해당 SST 파일 안에서 다시 binary search과정을 통해 실제 키가 없는지 확인한다.</p>
+<p>RocksDB는 이 “없는 키 조회과정”을 빠르게 만들기 위해서 Bloom Filter를 사용한다.<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a> Bloom Filter는
+일종의 해시테이블로, 확률적으로 해당 키가 없음을 알려준다. Bloom Filter가 키가 있다고 하면
+정말로 키가 있을 수도 없을 수도 있다. Bloom Filter가 키가 없다고 하면 정말로 없다.</p>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1"><p>RocksDB는 MemTable에서 사용하는 자료구조로 Skip list대신 다른 걸 선택할 수 있다. Skip list가 기본값이다.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>SSD는 하드 디스크에 비해서 random 쓰기가 빠르지만, SSD 역시 sequential 쓰기가 random 쓰기보다 빠르다. 페이지 단위로 쓰기와, 이전 페이지 가비지 처리 때문이다.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p><a href="https://github.com/facebook/rocksdb/wiki/Leveled-Compaction">https://github.com/facebook/rocksdb/wiki/Leveled-Compaction</a><a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p><a href="https://github.com/facebook/rocksdb/wiki/Leveled-Compaction">RocksDB wiki</a> 이해를 돕는 그림들이 있다.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5"><p><a href="https://github.com/facebook/rocksdb/wiki/RocksDB-Bloom-Filter">https://github.com/facebook/rocksdb/wiki/RocksDB-Bloom-Filter</a><a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+
+<script src="https://utteranc.es/client.js" repo="majecty/blog-comments" issue-term="pathname" theme="github-light" crossorigin="anonymous" async>
+</script>
+
+            </div>
+            <div id="footer">
+                Site proudly generated by
+                <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+            </div>
+        </div>
+        <script type="text/javascript" src="https://wcs.naver.net/wcslog.js"></script>
+        <script type="text/javascript">
+        if(!wcs_add) var wcs_add = {};
+        wcs_add["wa"] = "1204a977388eb38";
+        wcs_do();
+        </script>
+    </body>
+</html>

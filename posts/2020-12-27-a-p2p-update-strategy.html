@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <meta property="og:type" content="website">
+        <meta property="og:title" content="주형 Blog - P2P 소프트웨어의 업그레이드 전략">
+        <meta property="og:image" content="https://blog.majecty.com/favicon_310.png">
+
+        <link rel="icon" type="image/png" href="../favicon_16.png" sizes="16x16">
+        <link rel="icon" type="image/png" href="../favicon_32.png" sizes="32x32">
+        <link rel="icon" type="image/png" href="../favicon_96.png" sizes="96x96">
+        <link rel="icon" type="image/png" href="../favicon_310.png" sizes="310x310">
+
+        <title>주형 Blog - P2P 소프트웨어의 업그레이드 전략</title>
+        <link rel="stylesheet" type="text/css" href="../css/default.css" />
+        <link rel="stylesheet" type="text/css" href="../css/syntax.css" />
+        <link rel="home" type="application/rss+xml" href="https://blog.majecty.com/atom.xml" />
+
+        <link href="//cdn.muicss.com/mui-0.9.41/css/mui.min.css" rel="stylesheet" type="text/css" />
+        <script src="//cdn.muicss.com/mui-0.9.41/js/mui.min.js"></script>
+
+        <link href="https://fonts.googleapis.com/css?family=Nanum+Gothic+Coding" rel="stylesheet"> 
+        <link href="https://fonts.googleapis.com/css?family=Nanum+Gothic" rel="stylesheet">
+        <script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-78778924-1', 'auto');
+ga('send', 'pageview');
+
+        </script>
+
+    </head>
+    <body class="mui-container">
+        <div style="margin:5px;">
+            <div id="header">
+                <div id="logo">
+                    
+                    <a href="../">주형 블로그</a>
+                    
+                </div>
+                <div id="navigation">
+                    
+                    <a href="../">Home</a>
+                    
+                    <a href="../contact.html">Contact</a>
+                    <a href="../wikis.html">Wiki</a>
+                </div>
+            </div>
+
+            <div id="content">
+                
+                <h1>P2P 소프트웨어의 업그레이드 전략</h1>
+                
+
+                <div class="info">
+    2020년 12월 27일에 씀
+</div>
+
+<div class="info">
+    
+    찾아보기: <a title="All pages tagged 'blockchain'." href="../tags/blockchain.html" rel="tag">blockchain</a>, <a title="All pages tagged 'bitcoin'." href="../tags/bitcoin.html" rel="tag">bitcoin</a>, <a title="All pages tagged 'ethereum'." href="../tags/ethereum.html" rel="tag">ethereum</a>
+    
+</div>
+
+<br />
+
+<p>서비스는 계속해서 바뀐다. 개발자들은 프로그램을 꾸준히 변경한다.
+온라인 게임이나, 서버를 쓰는 앱 처럼 서버와 클라이언트가 서로 통신하는 서비스는
+업데이트 이후에도 문제 없이 통신할 수 있게 주의를 기울여야 한다.
+업데이트에 실수가 있다면, 이전 버전의 클라이언트와 나중 버전의 서버가 만났을 때 예상치 못한 버그가 발생할 수 있다.</p>
+<p>가장 간단한 업데이트 방법은 통신하는 양쪽의 프로그램을 끄고 전부 업데이트한 다음에 다시 켜는 방법이다.
+나는 이전에 모바일 게임을 개발할 때 이 방법을 썼다. 모바일 게임 유저들은 대체로 최신의 클라이언트를 원하기 때문에
+강제적으로 버전업을 해도 큰 불만을 가지지 않는다. 행여 서로 다른 버전의 유저들이 겪는 경험이 달라서
+게임의 밸런스의 문제가 된다면 해당 문제가 더 큰 문제가 된다.</p>
+<p>모바일 앱을 만들 때는 좀 더 보수적이었다. 많은 유저들이 지금 버전에 만족한다.
+업데이트를 받으라고 유저를 강요하면, 원치 않은 상황에 앱을 못쓰게 되어서 유저들의 반발이 클 수 있다.
+이 경우 통신을 하는 양 단이 이전 버전도 지원하면서 점진적으로 업데이트하게 했다.
+코드에는 버전에 따른 if/else문이 들어가거나, API에 옵셔널한 추가적인 인자들이 지속적으로 추가되는 등
+코드 관리에 부담이 생기는 방식이다.</p>
+<p>p2p로 동작하는 블록체인은 업데이트할 때 신경써야할 부분이 더 많다.
+먼저 무엇을 바꿀지 정하는 것부터가 쉽지 않다. 블록체인 네트워크에 참여하는 사람들은
+자신의 이익에 따라 프로그램의 업데이트를 반대할 수도 있다. 코드를 고치기 전, 무엇을 고칠 것이고, 그 영향이
+어떻게 될 것인지 충분한 토의가 필요하다. 비트코인과 이더리움은 BIP와 EIP를 통해 변경 사항을 논의 밎 결정하는 과정을 거친다.</p>
+<p>프로그램을 수정했어도 바로 해당 사항을 적용할 수 없다. 비트코인과 이더리움 노드를 돌리는
+사람들, 수 많은 verifier들이 같이 버전업을 해주어야 한다. 만약 네트워크의 일부만 버전을 올리고 일부는 이전 버전을 쓴다면
+큰 문제가 생길 수 있다. 새 버전을 쓰는 사람끼리 하나의 비트코인 네트워크를
+구성하고, 이전 버전을 쓰는 사람들끼리 이전 버전의 네트워크를 구성하게 된다. 비트코인을 사용하는 모두가 싫어할 상황이다.</p>
+<p>비트코인은 이 문제를 해결하기 위해서 마이너들의 투표 시스템을 도입했다. 마이너들이 블록을 마이닝할 때
+버전업을 할 준비가 되어있는지 표시한다. 특정시간동안 찬성에 투표된 블록의 숫자가 충분하면 해당 변경사항이
+적용된다. 2017년에 있었던 비트코인의 segwit 업데이트는 특정기간동안
+마이너들의 95%가 찬성에 투표했을 때 실행되는 조건을 가지고 있었다. 2017년 7월 조건을 만족시켜
+비트코인 네트워크는 segwit을 도입했다.</p>
+<p>비트코인에서 변화를 도입하는 조건으로 마이너들의 투표를 쓰는 것도 완벽한 해결책은 아니다.
+블록체인에서 마이너들의 해시파워 뿐 아니라 수많은 밸리데이터노드들의 참여 역시 중요하기 때문이다.
+하지만 벨리데이터 노드들의 투표를 안전하게 처리할 방법이 없다.
+블록체인의 네트워크를 업데이트 하는 해결책은 아직 나오지 않은 것 같다. 더 많은 사람들 논의하고,
+더 많은 문제들이 터져서 하나 하나 해 나가면서 방법을 찾지 않을까.</p>
+
+<script src="https://utteranc.es/client.js" repo="majecty/blog-comments" issue-term="pathname" theme="github-light" crossorigin="anonymous" async>
+</script>
+
+            </div>
+            <div id="footer">
+                Site proudly generated by
+                <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+            </div>
+        </div>
+        <script type="text/javascript" src="https://wcs.naver.net/wcslog.js"></script>
+        <script type="text/javascript">
+        if(!wcs_add) var wcs_add = {};
+        wcs_add["wa"] = "1204a977388eb38";
+        wcs_do();
+        </script>
+    </body>
+</html>

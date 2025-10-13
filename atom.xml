@@ -1,0 +1,696 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <title>하스켈과 게임개발, 블록체인에 관한 블로그 글들</title>
+    <link href="https://blog.majecty.com/atom.xml" rel="self" />
+    <link href="https://blog.majecty.com" />
+    <id>https://blog.majecty.com/atom.xml</id>
+    <author>
+        <name>주형</name>
+        
+        <email>majecty+feed@gmail.com</email>
+        
+    </author>
+    <updated>2025-10-14T00:00:00Z</updated>
+    <entry>
+    <title>solana program이 할 수 있는 일과 할 수 없는 일</title>
+    <link href="https://blog.majecty.com/posts/2025-10-14-a-what-solana-programs-can-and-cannot-do.html" />
+    <id>https://blog.majecty.com/posts/2025-10-14-a-what-solana-programs-can-and-cannot-do.html</id>
+    <published>2025-10-14T00:00:00Z</published>
+    <updated>2025-10-14T00:00:00Z</updated>
+    <summary type="html"><![CDATA[<div class="info">
+    2025년 10월 14일에 씀
+</div>
+
+<div class="info">
+    
+    찾아보기: <a title="All pages tagged &#39;solana&#39;." href="/tags/solana.html" rel="tag">solana</a>, <a title="All pages tagged &#39;blockchain&#39;." href="/tags/blockchain.html" rel="tag">blockchain</a>
+    
+</div>
+
+<br />
+
+<p>solana program<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>은 일반적인 코드를 작성하는 환경과 꽤 다릅니다. 이 다름을 알지 못하고 solana program 작성을 시작하면 나중에서야 다 뒤엎고 다시 작성하게 됩니다. solana program이 무엇을 할 수 있고, 무엇을 할 수 없는지 이해할 수 있도록 이 글에 정리해보았습니다.</p>
+<p>모든 solana program은 SBPF virtual machine 라는 가상 머신의 opcode 로 컴파일 됩니다. 전체 opcode 는 <a href="https://github.com/anza-xyz/sbpf/blob/ea33a5c236a5e476a5c64ebba873e40733de761a/doc/bytecode.md">anza-xyz github repo의 doc</a>에서 확인하실 수 있어요. 아래처럼 5가지 일을 하는 opcode들로 볼 수 있습니다.</p>
+<ul>
+<li>memory에 있는 값을 register 로 복사</li>
+<li>register에 있는 값을 memory에 복사</li>
+<li>register 들끼리 연산하기</li>
+<li>jump / call 등의 control flow 변경</li>
+<li>syscall 호출</li>
+</ul>
+<p>그렇다면 syscall 은 어떤 것들이 있는지 찾아보겠습니다. <a href="https://github.com/anza-xyz/agave/blob/7fb1e0dda9c954618f1aef68c1aff6bc79e9d687/syscalls/src/lib.rs#L335">agave/sysalls/src/lib.rs 파일</a>에서 찾아볼 수 있습니다. 다음 기능들을 사용하는 것으로 분류할 수 있습니다.</p>
+<ul>
+<li>log 남기기</li>
+<li>abort/panic</li>
+<li>pda<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> 계산하기</li>
+<li>crypto 함수(hash나 elliptic curve 함수들)</li>
+<li>블록체인 정보 조회(시간, fee, 조회 등)</li>
+<li>cross program invocation(다른 solana program 호출)</li>
+</ul>
+<p>저는 이 둘을 찾아보고 나서 궁금한 점이 생겼습니다. blockchain 의 transaction은 blockchain 에 있는 정보를 수정할 때 가치가 있습니다. 하지만 위의 instruction과 syscall 만 봐서는 blockchain이 저장하는 데이터를 읽고 쓸 방법이 없습니다. 어떻게 되는 걸까요. solana 에서는 모든 정보를 account에 담아서 관리합니다. transaction을 실행하기 전에 transaction이 읽고 쓰는 모든 account 를 미리 메모리에 올려둡니다. 이 메모리 번지수를 solana program에 넘기면 solana program이 memory에 있는 값을 읽고 쓰게 됩니다. transaction이 끝나면 변경된 메모리 값을 blockchain state에 저장합니다. 이를 이해하게 되면 solana transaction을 만들 때 왜그렇게 많은 account 목록을 미리 준비해야하는지 알게됩니다.</p>
+<p>조금 재밌는 점도 찾아볼 수 있습니다. solana에서는 모든 account가 sol을 소유합니다. account가 얼마의 sol을 가지고 있는지는 account에 적혀있는 정보입니다. solana에 있는 program들이 account에 담기 sol balance를 수정할 수 있습니다.<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a> 처음 보고 놀랐습니다. solana balance를 수정할 수 있게 하면서 어떻게 돈이 복사되지 않게 막을 수 있을지 궁금했습니다. 정답은 transaction 실행 앞뒤로 account 들의 solana balance 합이 맞는지 체크하기 때문에 돈이 복사되지 않는다는 것이었습니다. transcation을 실행하기 전에 transaction이 읽고 쓰는 모든 account의 solana balance 합이 transaction이 끝난 뒤 solana balance 합과 같은지 검증합니다. 검증하는 코드는 <a href="https://github.com/anza-xyz/agave/blob/7fb1e0dda9c954618f1aef68c1aff6bc79e9d687/svm/src/transaction_processor.rs#L951">agave/svm/src/transaction_processor.rs 파일</a>에서 찾아볼 수 있습니다.</p>
+<p>이렇게 vm과 syscall 이 할 수 있는 일들을 이해하게 되면 solana program을 작성할 때 자신있게 코드를 작성할 수 있습니다. 내가 적성하는 코드가 어떻게 해석될지 이해하고 코드를 작성하면 더 안전하고, 더 효율적인 코드를 작성할 수 있습니다.</p>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1"><p>solana 에서 동작하는 스마트 컨트랙트를 solana program이라고 합니다. 블록체인에 모든 상태가 기록되어있고, 트랜잭션을 통해서 상태를 변경할 수 있습니다.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>solana에서 program이 관리하는 account를 pda라고 합니다. solana program 코드는 상태를 가지지 못합니다. 대신 pda를 만들어서 pda 안에 상태를 저장할 수 있습니다. 혹은 권한 관리가 필요할 때 여러 pda를 만들어서 pda마다 서로 다른 권한을 부여하기도 합니다.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>모든 account는 owner account 를 지정합니다. 이 owner account 에 담긴 프로그램만이 account가 가진 solana 양을 줄일 수 있어요. 그리고 모든 solana 프로그램은 임의의 account 의 balance 값을 더 높게 수정할 수 있습니다. 자세한 내용은 <a href="https://solana.com/docs/core/accounts">공식 링크</a>에서 확인할 수 있습니다.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+
+<script src="https://utteranc.es/client.js"
+        repo="majecty/blog-comments"
+        issue-term="pathname"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+</script>
+]]></summary>
+</entry>
+<entry>
+    <title>Solana anchor에 대한 인상</title>
+    <link href="https://blog.majecty.com/posts/2025-10-12-a-anchor-simplifies-solana-accounts-but-struggles.html" />
+    <id>https://blog.majecty.com/posts/2025-10-12-a-anchor-simplifies-solana-accounts-but-struggles.html</id>
+    <published>2025-10-12T00:00:00Z</published>
+    <updated>2025-10-12T00:00:00Z</updated>
+    <summary type="html"><![CDATA[<div class="info">
+    2025년 10월 12일에 씀
+</div>
+
+<div class="info">
+    
+    찾아보기: <a title="All pages tagged &#39;solana&#39;." href="/tags/solana.html" rel="tag">solana</a>, <a title="All pages tagged &#39;anchor&#39;." href="/tags/anchor.html" rel="tag">anchor</a>, <a title="All pages tagged &#39;blockchain&#39;." href="/tags/blockchain.html" rel="tag">blockchain</a>
+    
+</div>
+
+<br />
+
+<p>solana 에서 program<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> 을 만들 때 <a href="https://www.anchor-lang.com/docs">anchor</a> 를 사용하면 직접 작성하기 까다로운 코드를 쉽게 작성할 수 있습니다. 최근 solana program을 직접 작성하면서 anchor 를 사용해본 경험을 정리했습니다.</p>
+<h3 id="solana의-account">solana의 account</h3>
+<p>solana 블록체인에 저장하는 모든 값은 account 라는 단위로 저장합니다. 모든 account 는 블록체인 지갑처럼 고유한 publickey 로 구분할 수 있습니다. 솔라나 프로그램의 코드도, 솔라나 프로그램이 저장하는 state도 각각의 account 에 저장해요. 블록체인에 값을 저장하는 건 비싸기 때문에 solana account 를 만들거나 크기를 키울 때 꽤 많은 sol을 예치금으로 담아두어야합니다.</p>
+<p>account 를 다루는 건 까다로운 지점이 많습니다. 저장하고 있는 값의 byte 수에 따라서 solana 를 예치해야하기 때문에 크기가 변하는 값을 저장하기가 어려워요. map 같은 걸 만드는 건 불가능에 가깝고, size가 바뀌는 array도 어렵습니다. solana가 내부적으로 byte array로만 값을 저장해주기 때문에 프로그래머가 알아서 값들을 직렬화/역질렬화를 해야합니다. account 관련 보안 문제가 될 지점도 많아서 조심히 써야합니다. 모든 account 는 solana program 외부에서 전달되어 들어옵니다. 악의적으로 엉뚱한 account를 인자로 주었을 때 검증을 안하면 자산을 탈취당하기 쉽습니다.</p>
+<p>이렇게 다루기 귀찮은 account 방식을 쓰는 이유는 transaction을 병렬적으로 실행하기 위해서에요. 여러 트랜잭션이 서로 다른 account 를 읽거나 쓰는 경우는 안전하게 병렬적으로 실행할 수 있어요. solana의 transaction은 자신이 읽거나 쓰는 모든 account를 미리 명시하고 있기 때문에 transaction을 실행하기 전에 병렬적으로 호출할 transaction들을 미리 파악할 수 있습니다. 다른 스마트컨트랙트 언어인 move 언어나 telegram의 ton 블록체인 역시 병렬 실행을 위해 비슷한 구조를 사용해요.</p>
+<h3 id="불편한-account-를-anchor로-쉽게-다루기">불편한 account 를 anchor로 쉽게 다루기</h3>
+<p>anchor를 사용하면 직렬화/역직렬화 코드와 보안을 위한 account 검증 코드를 쉽게 작성할 수 있어요. anchor 가 제공해주는 매크로를 사용하면 solana struct 로 정의한 account 의 직렬화/역직렬화 코드가 자동으로 생성됩니다. anchor 의 규칙에 맞게 함수를 정의하면 사용하기 쉽게 solana struct 를 인자로 받아올 수 있어요.</p>
+<p>아래 코드는 solana spl token program의 일부분이에요<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>. transfer instruction을 처리하는 코드의 앞부분과 끝부분입니다. account 목록이 <code>accounts</code> 인자로 들어오면 이걸 하나씩 꺼낸 뒤 <code>Account::unpack</code> 이라는 함수로 역직렬화를 하는 걸 볼 수 있어요. 모든 로직이 끝나면 다시 Account::pack 함수를 호출해서 byte array로 직렬화하고 있습니다.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// transfer 코드 앞부분</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="kw">pub</span> <span class="kw">fn</span> process_transfer(</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>	program_id<span class="op">:</span> <span class="op">&amp;</span>Pubkey<span class="op">,</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>	accounts<span class="op">:</span> <span class="op">&amp;</span>[AccountInfo]<span class="op">,</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>	amount<span class="op">:</span> <span class="dt">u64</span><span class="op">,</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>	expected_decimals<span class="op">:</span> <span class="dt">Option</span><span class="op">&lt;</span><span class="dt">u8</span><span class="op">&gt;,</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> ProgramResult <span class="op">{</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>	<span class="kw">let</span> account_info_iter <span class="op">=</span> <span class="op">&amp;</span><span class="kw">mut</span> accounts<span class="op">.</span>iter()<span class="op">;</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>	<span class="co">// account_iter로부터 account를 하나씩 꺼내옵니다.</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>	<span class="kw">let</span> source_account_info <span class="op">=</span> next_account_info(account_info_iter)<span class="op">?;</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>	<span class="op">....</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>	<span class="kw">let</span> destination_account_info <span class="op">=</span> next_account_info(account_info_iter)<span class="op">?;</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>	<span class="op">...</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>	<span class="co">// 꺼낸 account_info를 unpack해서 읽고 쓰기 쉬운 struct 타입으로 변환합니다.</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>	<span class="kw">let</span> <span class="kw">mut</span> source_account <span class="op">=</span> <span class="pp">Account::</span>unpack(<span class="op">&amp;</span>source_account_info<span class="op">.</span>data<span class="op">.</span>borrow())<span class="op">?;</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>	<span class="kw">let</span> <span class="kw">mut</span> destination_account <span class="op">=</span> <span class="pp">Account::</span>unpack(<span class="op">&amp;</span>destination_account_info<span class="op">.</span>data<span class="op">.</span>borrow())<span class="op">?;</span></span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>	<span class="co">// transfer 코드 뒷부분</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>	</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>	<span class="pp">Account::</span>pack(source_account<span class="op">,</span> <span class="op">&amp;</span><span class="kw">mut</span> source_account_info<span class="op">.</span>data<span class="op">.</span>borrow_mut())<span class="op">?;</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>	<span class="pp">Account::</span>pack(</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>		destination_account<span class="op">,</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>		<span class="op">&amp;</span><span class="kw">mut</span> destination_account_info<span class="op">.</span>data<span class="op">.</span>borrow_mut()<span class="op">,</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>	)<span class="op">?;</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>	<span class="cn">Ok</span>(())</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>아래 코드는 anchor 를 사용한 코드입니다. account 를 pack / unpack하는 과정을 anchor 가 자동으로 해주기 때문에 account 를 사용하는 코드가 무척 간결해집니다. 그 이외에도 mutable 설정에 대한 검증이나, account 의 ownership<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a> 에 대한 검증들도 자동으로 처리해줍니다.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a> </span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="at">#[</span>derive<span class="at">(</span>Accounts<span class="at">)]</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="kw">pub</span> <span class="kw">struct</span> TransferAccounts<span class="op">&lt;</span><span class="ot">&#39;info</span><span class="op">&gt;</span> <span class="op">{</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">#[</span>account<span class="at">(</span><span class="kw">mut</span><span class="at">)]</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">pub</span> source<span class="op">:</span> Account<span class="op">&lt;</span><span class="ot">&#39;info</span><span class="op">,</span> TokenAccount<span class="op">&gt;,</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">#[</span>account<span class="at">(</span><span class="kw">mut</span><span class="at">)]</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">pub</span> destination<span class="op">:</span> Account<span class="op">&lt;</span><span class="ot">&#39;info</span><span class="op">,</span> TokenAccount<span class="op">&gt;,</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    <span class="op">...</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="kw">pub</span> <span class="kw">fn</span> process_transfer(</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>	ctx<span class="op">:</span> Context<span class="op">&lt;</span>TransferAccounts<span class="op">&gt;,</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>	amount<span class="op">:</span> <span class="dt">u64</span><span class="op">,</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>	expected_decimals<span class="op">:</span> <span class="dt">Option</span><span class="op">&lt;</span><span class="dt">u8</span><span class="op">&gt;,</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> ProgramResult <span class="op">{</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>	<span class="kw">let</span> <span class="kw">mut</span> source_account <span class="op">=</span> <span class="op">&amp;</span>ctx<span class="op">.</span>accounts<span class="op">.</span>source<span class="op">;</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>	<span class="kw">let</span> <span class="kw">mut</span> destination_account <span class="op">=</span> <span class="op">&amp;</span>ctx<span class="op">.</span>accounts<span class="op">.</span>destination<span class="op">;</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>    <span class="co">// pack을 명시적으로 하지 않아도 anchor 가 알아서 처리해줍니다.</span></span></code></pre></div>
+<h3 id="anchor-의-아쉬운-점들">Anchor 의 아쉬운 점들</h3>
+<p>anchor 는 편리했지만 조금만 사용해도 불편함을 크게 느낄 수 있어요. 가장 먼저 어려웠던 점은 암묵적인 규칙들에 대한 에러메시지가 매우 불친절하다는 점입니다. anchor 의 문서에서 가장 중요한 부분은 <a href="https://www.anchor-lang.com/docs/references/account-types">Account Types</a> 와 <a href="https://www.anchor-lang.com/docs/references/account-constraints">Account Constraints</a> 파트입니다. 다양한 account type 과 account 의 constraint 를 골라서 사용해야합니다. 예를 들어서 아래처럼 token::mint 에 target_account 를 넣어야할 때 어떤 값을 어떻게 넣어야하는지에 대해서 알려주지 않아요. target_account에 상수를 넣을 수 있는지, 같은 accounts 안의 다른 field를 넣을 수 있는지, 다른 account의 안의 data에 적혀있는 account address 를 써도 되는지 알 수 없어요. 어떤게 될지 몰라서 임의의 값을 넣어보더라도 에러메시지가 매우 불친절해서 어떻게 고쳐야하는지 알기 어렵습니다. 몇 번 시도하다 보면 결국 example 에 작성된 코드에서 조금이라도 벗어나는 코드를 쓰기 어려워져요.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="at">#[</span>account<span class="at">(</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    <span class="pp">token::</span>mint <span class="op">=</span> <span class="op">&lt;</span>target_account<span class="op">&gt;,</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="pp">token::</span>authority <span class="op">=</span> <span class="op">&lt;</span>target_account<span class="op">&gt;</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="at">)]</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a> </span></code></pre></div>
+<p>또 다른 예시로 optional account 가 있습니다. 아래 코드처럼 optional 하게 account 를 받아올 수 있어요. 문제는 이 accounts를 typescript 에서 생성해야할 때 문제가 발생했어요. solana 는 <a href="https://www.npmjs.com/package/@solana/web3.js">web3.js library</a> 에서 <a href="https://github.com/anza-xyz/kit">solana kit library</a> 로 이전하고 있어요. anchor 가 만들어주는 typescript library 는 web3.js 에 의존하고 있어서 제가 작업하는 프로젝트에서 쓸 수 없었습니다. 따라서 이 optional 한 필드에 값을 빼고 싶을 때 어떠한 처리를 해야하는지 제가 직접 확인하고 작업을 해야했어요. 하지만 anchor 쪽에서는 optional한 field를 어떻게 처리하는지 문서가 없어요. 그리고 solana에서는 account 목록을 transaction에 담을 때 optional한 인자를 처리하는 방법을 제공해주지 않아요. anchor가 임의의 규칙을 만들어서 optional 처리를 하고 있던 거에요. 결국 optional 을 어떻게 처리하는지는 anchor 내부 코드를 읽고 나서야 이해할 수 있었습니다.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="at">#[</span>derive<span class="at">(</span>Accounts<span class="at">)]</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="kw">pub</span> <span class="kw">struct</span> InstructionAccounts<span class="op">&lt;</span><span class="ot">&#39;info</span><span class="op">&gt;</span> <span class="op">{</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">pub</span> account<span class="op">:</span> <span class="dt">Option</span><span class="op">&lt;</span>Account<span class="op">&lt;</span><span class="ot">&#39;info</span><span class="op">,</span> AccountType<span class="op">&gt;&gt;,</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>아래가 anchor 내부에서 optional한 타입을 처리하는 코드입니다. account 의 key가 pogram의 id를 넣어주면 None 으로 처리해주는 거였어요. 이 <a href="https://github.com/solana-foundation/anchor/blob/1ebbe58158d089a2a40b5e35ebead5a10db9090d/lang/src/accounts/option.rs#L46">링크</a>에서 코드를 직접 보실 수 있습니다.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> accounts[<span class="dv">0</span>]<span class="op">.</span>key <span class="op">==</span> program_id <span class="op">{</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>	<span class="op">*</span>accounts <span class="op">=</span> <span class="op">&amp;</span>accounts[<span class="dv">1</span><span class="op">..</span>]<span class="op">;</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>	<span class="cn">Ok</span>(<span class="cn">None</span>)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="op">}</span> <span class="cf">else</span> <span class="op">{</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>	<span class="co">// If the program_id doesn&#39;t equal the account key, we default to</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>	<span class="co">// the try_accounts implementation for the inner type and then wrap that with</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>	<span class="co">// Some. This should handle all possible valid cases.</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>	<span class="pp">T::</span>try_accounts(program_id<span class="op">,</span> accounts<span class="op">,</span> ix_data<span class="op">,</span> bumps<span class="op">,</span> reallocs)<span class="op">.</span>map(<span class="cn">Some</span>)</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<h3 id="anchor-를-어떻게-다루어야할까">Anchor 를 어떻게 다루어야할까</h3>
+<p>내가 작성하는 solana program이 anchor 에서 제공해주는 예시를 따라하는 것 만으로도 요구사항이 만족되면 딱히 문제가 없습니다. 하지만 그 이외의 작업을 해야한다면 결국 anchor 의 소스코드를 읽어야하고, <code>anchor expand</code> 를 사용해서 anchor 가 생성하는 소스코드를 확인해야합니다. (anchor expand 명령어로 anchor가 생성하는 코드를 출력해볼 수 있어요.) 안전한 program을 작성하는 데 큰 도움을 주는 라이브러리이긴 해요. 어떠한 라이브러리들은 디테일을 잘 감싸주어서 사용자들이 디테일을 잘 모르는 상태로 써도 됩니다. anchor는 반대로 사용하는 사람들이 anchor가 해주는 데테일이 무엇인지 전부 파악한 상태로 사용해야하는 라이브러리입니다.</p>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1"><p>solana blockchain의 smart contract 를 program이라고 부릅니다. 코드와 state 가 solana blockchain에 저장됩니다. solana program의 결과는 다시 state 에 적혀서 solana 를 사용하는 모든 사람이 확인할 수 있습니다.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>https://github.com/solana-program/token/blob/369b0818ee958e52e9110bcf0842ecceabd7c28c/program/src/processor.rs#L227 에서 원문 코드를 확인할 수 있습니다.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>모든 accounet는 owner account 를 지정합니다. 이 owner account 에 담긴 program만이 account 에 적힌 data 값을 수정할 수 있어요.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+
+<script src="https://utteranc.es/client.js"
+        repo="majecty/blog-comments"
+        issue-term="pathname"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+</script>
+]]></summary>
+</entry>
+<entry>
+    <title>langgraph에서 벗어나기</title>
+    <link href="https://blog.majecty.com/posts/2025-10-01-a-beyond-langgraph.html" />
+    <id>https://blog.majecty.com/posts/2025-10-01-a-beyond-langgraph.html</id>
+    <published>2025-10-01T00:00:00Z</published>
+    <updated>2025-10-01T00:00:00Z</updated>
+    <summary type="html"><![CDATA[<div class="info">
+    2025년 10월  1일에 씀
+</div>
+
+<div class="info">
+    
+    찾아보기: <a title="All pages tagged &#39;ai&#39;." href="/tags/ai.html" rel="tag">ai</a>, <a title="All pages tagged &#39;llm&#39;." href="/tags/llm.html" rel="tag">llm</a>
+    
+</div>
+
+<br />
+
+<p>llm api 를 사용한 제품을 만들면서 처음엔 langgraph 를 도입했습니다. 이후에 langgraph 를 벗어나 직접 채팅 내역 관리와 상태 관리를 구현했습니다. 이 과정에서 느꼈던 점들과 배웠던 점을 정리했어요.</p>
+<h3 id="막막할-때-구원의-손길-langgraph">막막할 때 구원의 손길 langgraph</h3>
+<p>처음 챗봇을 만들어야 했을 때 langgraph 가 큰 도움이었습니다. 유저가 질문하면 이미 알고 있는 정보를 바탕으로 답변을 하는 챗봇을 만들어야 했어요. 은행 앱에 있는 챗봇과 비슷합니다. 이 때 비슷한 작업을 해본 적이 없어서 막막했습니다. 사용자가 질문을 하면 그 질문으로부터 적절한 검색어를 추출해야했어요. 이 검색어로 디비에 있는 정보를 검색해야했습니다. 검색한 결과를 잘 다듬어서 유저의 질문에 맞는 답으로 제공해야했어요. 각각이 어려웠습니다.</p>
+<p>langgraph 가 제공해주는 tutorial<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> 을 따라하면서 최소한의 원하는 기능을 쉽게 구현할 수 있었습니다. 모르던 많은 개념들도 익히게 되었어요. rag<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> 가 무엇인지, 어떻게 원본 정보를 쪼개고 vector화 해서 저장하는지, 어떻게 다시 쿼리하는지 등에 대해서 알게 되었습니다. 아무 것도 모르는 상태로도 동작하는 걸 만들 수 있었고, 이를 분석하면서 많이 배웠어요.</p>
+<h3 id="langgraph-를-벗어나게-된-이유---graph-구조의-답답함">langgraph 를 벗어나게 된 이유 - graph 구조의 답답함</h3>
+<p>가장 큰 이유는 langgraph 의 graph 구조가 답답했기 때문이었습니다. langgraph에서는 여러 작업을 graph 형태로 표현합니다. 시작 node에서 끝 node로 이동하면서 llm이나 db 호출들을 진행해요. 끝 노드에 도착해서 나오는 결과물을 chatbot output 으로 사용합니다.</p>
+<p>예를 들어서 자산을 이체하거나, 자산을 조회하는 기능을 가진 챗봇을 가정할게요. alice가 bob에게 500원을 이체해달라는 요청을 챗봇에게 했어요. 이 때 이렇게 그래프의 노드를 정의할 수 있습니다.</p>
+<ol type="1">
+<li>alice 의 의도 파악</li>
+<li>얼마의 자산을, 누구에게 이체할지 정보 추출</li>
+<li>서버 api를 사용해서 자산을 실제 전송</li>
+<li>alice 에게 전달할 채팅 메시지 생성</li>
+</ol>
+<p>이렇게 graph로 코드의 흐름을 표현하면 코드의 실행 흐름을 파악하기가 어려웠어요. 특히 각 노드들 사이에 의존 관계가 있는 경우 이 의존 관계가 잘 정의되어있는지 파악하기 어려웠습니다. 에러 처리를 하는 것도 까다로웠어요. 어떤 에러들이 발생할 수 있는지 알고 잘 처리하려면 사실상 langgraph 소스코드를 읽어야했습니다.</p>
+<p>코드흐름을 쉽게 파악하면서 에러처리도 잘 해내려면 if/else/while 을 쓰는 게 더 편하다고 판단했어요. 우리 팀이 구현해야했던 요구사항 정도는 분기와 반복문으로도 충분히 간결하게 표현이 가능했어요. 앞선 단계에서 뒤로 전달해야하는 정보도 함수의 반환값과 인자로 표현할 수 있어 명확했구요. 에러처리도 익숙한 try catch 로 원하는 걸 쉽게 구현할 수 요었습니다.</p>
+<h3 id="langgraph-를-벗어나게-된-이유---기능-확장의-어려움">langgraph 를 벗어나게 된 이유 - 기능 확장의 어려움</h3>
+<p>채팅 내역을 관리하는 것과 rag(지식 검색)의 확장이 까다로운 것도 langgraph에서 빠져나오게 된 추가적인 이유들이었어요. langgraph에서는 채팅 내역을 자동으로 postgresql 에 저장할 수 있어요. 처음은 쉽지만 조금 쓰다 보면 문제가 생겨요. 계속해서 채팅 내역이 쌓이기 때문에 context 제한을 넘쳐버리는 문제가 생겨요. 히스토리를 삭제하거나 요약해야하는데 이게 꽤 까다로웠습니다. remove message 를 만들어서 langgraph library에 전달해야해요. 그런데 단순하게 history를 지우는 코드를 작성하면 실행시점에 에러가 발생했어요. 항상 같이 지워져야하는 message들이 있었습니다. tool call과 tool call result message 는 항상 동시에 지워져야했어요. 이 중 하나만 지우면 langgraph 에서 나중에 에러가 나구요. 디비에 저장하는 구조도 꽤 복잡한 편이라서 디비 도구로 현재 history를 직접 쿼리하는 것도 어려웠어요. 우리 팀에 필요한 요구사항만 포함하도록 chatting history를 저장하도록 직접 구현하는 게 langgraph를 잘 쓰기 위한 노력보다 쉬웠습니다.</p>
+<p>rag 를 확장하는 것도 까다로웠어요. rag 에 신뢰할 수 있는 소수의 정보를 저장할 때는 잘 동작했어요. llm 에 더 많은 정보를 제공하기 위해서 특정 시점에만 유효했던 정보나, 신뢰도가 낮은 정보들을 추가하게 되면서 문제가 어려워졌어요. langgraph가 제공해주는 rag에서는 검색할 때 정보의 출처에 따라 검색 순위를 바꾸거나 시간에 따라 점수를 부여하는 게 까다로웠습니다. 디비에 정보를 저장할 때 추가정보를 저장해야하는데 langgraph에서는 db schema에 json 형태로 meta data를 저장하게 하더라구요. 디비 스키마에 칼럼을 따로 두고 관리하고 싶은 입장에서 꽤 불편했어요. rag 역시 필요한 요구사항만을 지원하는 가벼운 시스템을 직접 구현하는 게 비용이 덜 들겠다는 판단이 들었습니다.</p>
+<h3 id="결론">결론</h3>
+<p>langgraph 는 아무것도 모르는 상황에서 간단한 prototype 을 만들고, 이를 바탕으로 학습을 하는데 큰 도움을 준 도구였습니다. 다만 제가 작업하는 요구사항에 비해 기능이 과다했어요. 필요한 요구사항만을 만족시키는 코드를 작성하는 게 더 쉽고 미래에도 좋겠다는 판단을 했고 langgraph가 해주는 일들을 직접 구현했습니다.</p>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1"><p>아래 두 튜토리얼을 따라하고 분석하면서 많은 걸 배웠어요. <a href="https://langchain-ai.github.io/langgraph/tutorials/rag/langgraph_agentic_rag/#1-preprocess-documents">langgraph의 rag tutorial</a>, <a href="https://langchain-ai.github.io/langgraph/agents/run_agents/">langgraph의 run agent tutorial</a><a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>rag는 디비에 다양한 참고자료를 저장한 뒤 llm 이 필요할 때 백터 검색으로 찾아다 쓰는 기술을 의미합니다.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+
+<script src="https://utteranc.es/client.js"
+        repo="majecty/blog-comments"
+        issue-term="pathname"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+</script>
+]]></summary>
+</entry>
+<entry>
+    <title>llm api로 안정적인 출력을 뽑아내는 법</title>
+    <link href="https://blog.majecty.com/posts/2025-09-28-a-llm-api-chatbot.html" />
+    <id>https://blog.majecty.com/posts/2025-09-28-a-llm-api-chatbot.html</id>
+    <published>2025-09-28T00:00:00Z</published>
+    <updated>2025-09-28T00:00:00Z</updated>
+    <summary type="html"><![CDATA[<div class="info">
+    2025년 9월 28일에 씀
+</div>
+
+<div class="info">
+    
+    찾아보기: <a title="All pages tagged &#39;ai&#39;." href="/tags/ai.html" rel="tag">ai</a>, <a title="All pages tagged &#39;llm&#39;." href="/tags/llm.html" rel="tag">llm</a>
+    
+</div>
+
+<br />
+
+<p>llm api 를 사용해서 체계적이고 예측 가능하게 제품을 개발하는 건 어렵습니다. llm api 는 일반적인 api와는 다르게 결과물이 결정적이지 않기 때문입니다. 자산을 관리하는 챗봇을 개발하면서 안정적인 제품을 만들기 위해 노력했던 결과물을 공유합니다.</p>
+<p>예시 제품으로 usd와 krw 두 자산을 관리하는 챗봇을 가정할게요. 자신의 usd, krw 자산을 조회할 수 있고, 다른 누군가에게 전송하거나, 환전을 할 수 있는 제품입니다.</p>
+<h3 id="langgraph-를-활용하여-prototype-만들기">langgraph 를 활용하여 prototype 만들기</h3>
+<p>langgraph 를 사용하면 매우 쉽게 챗봇을 구현할 수 있습니다. <a href="https://langchain-ai.github.io/langgraph/agents/agents/#basic-configuration">langgraph의 create_react_agent</a> 라는 함수로 간단한 agent를 만들 수 있어요. 프롬프트와 tool 만 추가하면 됩니다. 프롬프트도 간단하게 <code>"너는 친절한 지갑 챗봇이야. krw / usd 두 자산을 관리해."</code> 정도로만 설정하면 됩니다. tool로 <code>getBalance</code>, <code>transferAsset</code>, <code>exchange</code> 등의 tool을 추가해주면 됩니다. 그러면 langgraph에서 히스토리 관리를 자동으로 관리해줍니다.</p>
+<h3 id="prototype-의-한계">prototype 의 한계</h3>
+<p>곧 한계가 왔습니다. 몇가지 중요한 문제가 발생했어요. 이전에 잘 대답했던 요청에 bot이 어느순간 대답을 잘 못하게 되었어요. 봇에 영향을 주는 건 거대한 하나의 prompt인 게 문제였어요. 내 자산 목록을 더 예쁘게 출력하기 위해서 프롬프트를 수정하면, 잘 되던 자산 전송 기능이 깨지는 경우들이 발생했습니다.</p>
+<p>다른 문제는 과거 채팅 내역을 잘못 활용하는 문제였습니다. 예를 들어서 유저가 자산을 확인했는데 자산이 없었어요. 10분뒤 유저가 자산을 이체한 뒤 다시 자산을 물어봤을 때 ai가 자산 조회 tool을 호출하지 않고 자산이 그대로 없다고 말했습니다. 이전에 챗봇이 돈이 없다고 출력한 내용을 ai가 읽고 그대로 대답한 게 문제였습니다.</p>
+<h3 id="해결">해결</h3>
+<p>첫 번째 문제를 해결하기 위해서 프롬프트를 쪼갰습니다. 예를 들어서 유저가 자산 조회를 요청하는 경우 llm api를 이렇게 여러번 호출합니다. 먼저 유저의 의도를 찾는 llm api 를 호출합니다. 유저의 의도가 자산 조회라는 게 확인되면 디비에서 자산을 조회합니다. 이 자산 정보를 예쁘게 포맷하는 llm api 를 호출합니다. 이를 유저에게 전달합니다. 이렇게 잘게 쪼개면 각각의 기능 구현이 이전 기능에 영향을 주지 않도록 만들 수 있습니다.</p>
+<p>두 번째 문제는 첫 번째 문제를 해결하면서 기능을 추가하여 해결했습니다. 첫번째 문제에서 각각의 llm api 콜을 나누면서 history 를 포함시키는지 여부를 지정했습니다. 예를들어서 유저의 의도를 파악하거나, 유저가 입력한 인자를 파악할 때에는 히스토리가 있어야 똑똑해집니다. 사람들이 여러 메시지에 걸쳐서 요청을 하는 경우가 빈번하기 때문입니다. 반대로 결과물을 출력할 때에는 과거 내역이 없는 게 좋습니다. 과거에 대답한 답변과 지금 출력해야하는 결과물이 서로 내용이 충돌할 경우 잘못된 출력이 나올 수 있기 때문입니다. 자산조회의 결과물을 출력할 때는 tool 의 결과물만을 llm api에 input 으로 주어서 채팅 아웃풋을 만들어야 안전합니다.</p>
+<p>위 두 과정을 거쳐서 llm을 사용한 챗봇을 안정적으로 구현하였습니다. 위 두가지 작업을 하면서 langgraph 를 사용하는 대신 open ai 의 공식 library 를 직접 사용하는 작업도 진행했습니다. langgraph 를 사용해서도 똑같이 구현할 수 있습니다. 몇가지 장단점을 비교한 뒤 langgraph보다 openai 라이브러리를 직접 호출하기로 결정했어요. 이에 대한 내용은 다음 글에서 이어서 하겠습니다.</p>
+
+<script src="https://utteranc.es/client.js"
+        repo="majecty/blog-comments"
+        issue-term="pathname"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+</script>
+]]></summary>
+</entry>
+<entry>
+    <title>kanata/kmonad 를 사용해서 맥북 air 키보드 자유롭게 바꾸기</title>
+    <link href="https://blog.majecty.com/posts/2025-05-03-a-kanata-kmonad-one-row-up.html" />
+    <id>https://blog.majecty.com/posts/2025-05-03-a-kanata-kmonad-one-row-up.html</id>
+    <published>2025-05-03T00:00:00Z</published>
+    <updated>2025-05-03T00:00:00Z</updated>
+    <summary type="html"><![CDATA[<div class="info">
+    2025년 5월  3일에 씀
+</div>
+
+<div class="info">
+    
+    찾아보기: <a title="All pages tagged &#39;keyboard&#39;." href="/tags/keyboard.html" rel="tag">keyboard</a>
+    
+</div>
+
+<br />
+
+<figure>
+<img src="/images/2025-05-03-a/miryoku-kmonad-layout.png" alt="miryoku kmonad layout" />
+<figcaption aria-hidden="true">miryoku kmonad layout</figcaption>
+</figure>
+<p>최근에 맥 키보드에서 위 이미지에서 밝은 색의 키만 사용해보고 있어요. 큰 기대를 안하고 시작했습니다. 그런데 잠깐 써보고 놀랐습니다. 생각보다 훨씬 마음에 들었어요.</p>
+<p>제 취미 중 하나가 키보드의 키를 재배치하는 거에요. 프로그래머로 일을 하다 보면 다양한 특수문자도 입력해야하고, 프로그램의 여러 단축키를 사용해요. 하지만 일반적인 키보드는 이런 다양한 입력을 잘 하기위해 설계되지 않았어요. ctrl,alt,shift 등의 키를 누르려면 손목이 많이 움직여야하고 어색하게 꺾일 때가 많아요. 숫자와 특수문자도 불편한 위치에 있습니다. 자주 사용하는 키들이 편한 위치에 있으면 좋을텐데 그렇지 않아요. 키보드의 배열을 만든 사람과 쓰는 사람이 너무 멀리 떨어져 있어요.</p>
+<p>더 편하게 사용하기 위해서 쓸 수 있는 방법 중 하나가 엄지손가락으로 여러 키를 누르게 하는 거에요.</p>
+<p>아래 이미지는 <a href="https://shop.keyboard.io/pages/model100">model 100</a> 이라는 키보드에요. 이 키보드는 손바닥으로 누르는 키가 양쪽에 하나씩, 그리고 엄지손가락으로 누르는 키가 양쪽에 4개씩 있어요. 이 키들에 ctrl/alt/shift 등을 할당하거나 enter/tab/esc/backspace 등 개발에서 자주 사용하는 키들을 할당해서 쓸 수 있어요.</p>
+<figure>
+<img src="/images/2025-05-03-a/model100keyboard.png" alt="model 100" />
+<figcaption aria-hidden="true">model 100</figcaption>
+</figure>
+<p>이런 키보드를 쓰면 좋지만 가끔 거추장스러울 때가 있어요. 잠깐 가볍게 까페에서 일하고 싶을 때 들고다니기에는 부담이 돼요. 집에서 본격적으로 일할 때가 아니라 가볍게 뭘 볼 때 쓰기 불편하기도 하구요. 저도 집과 회사에 엄지키가 따로 있는 키보드들이 있어요. 집중해서 일하는 경우 잘 사용하고 있습니다. 하지만 가끔 가벼운 마음에 노트북을 할 때에나 카페에 가서 쓰기에는 부담이 되는 경우가 있어요. 그럴 때 일반 키보드를 사용하게 되면 엄지손가락이 바보가 되어버려서 많이 아쉽습니다.</p>
+<p>그러다가 발견한 게 <a href="https://github.com/manna-harbour/miryoku_kmonad">miryoku 라는 keyboard layout 의 kmonad 라는 프로그램 설정</a>이었어요. <a href="https://github.com/kmonad/kmonad">kmonad</a> 는 키보드의 키 배열을 마음대로 바꿀 수 있는 프로그램입니다. <a href="https://github.com/manna-harbour/miryoku">miryoku</a> 는 아래 이미지처럼 36개의 키를 가지고 조합해서 full size keyboard 의 108개를 다 입력할 수 있게 해주는 keyboard layout이에요. 보시다시피 엄지손가락에 한쪽당 3개의 키를 할당해야 쓸 수 있는 키보드 레이아웃이에요.</p>
+<figure>
+<img src="/images/2025-05-03-a/miryoku-layout.png" alt="miryoku layout" />
+<figcaption aria-hidden="true">miryoku layout</figcaption>
+</figure>
+<p>저는 당연히 이런 엄지키 레이아웃을 일반 키보드로는 못 쓸거라고 생각하고 있었어요. 그런데 miryoku kmonad에서 아래처럼 혁명적인 키 재배열을 통해서 평범한 키보드에서도 엄지키를 할당하고 있더라구요. 세상에 이렇게 똑똑할수가.</p>
+<figure>
+<img src="/images/2025-05-03-a/miryoku-kmonad-layout.png" alt="miryoku kmonad layout" />
+<figcaption aria-hidden="true">miryoku kmonad layout</figcaption>
+</figure>
+<p>하지만 뛰어난 아이들이 으레 그러듯이 실용성은 없을 거라고 생각했어요. 그런데 제 맥북 air에 설정해서 써보니까 와 정말 좋더라구요. 오랜만에 새로운 키보드를 산 것 처럼 행복해졌습니다. 밑에는 이번에 kmonad/kanata를 설정하면서 알게된 정보들을 살짝 정리해보려고해요.</p>
+<h3 id="kmonad-vs-kanata">kmonad vs kanata</h3>
+<p>kmonad 와 kanata는 거의 비슷한 일을 하는 도구에요. kmonad 가 먼저 있었고, kanata 는 kmonad 를 바탕으로 기능을 추가한 새로운 도구입니다. 저도 kmonad 로 시작했다가, kanata가 제공하는 마우스키를 사용하고 싶어서 kanata로 이동했어요. 둘이 거의 비슷한 문법의 설정파일을 지원하고 있어서 양쪽 변환은 쉬운 편이에요. kanata가 나중에 나온 것 답게 기능이 좀 더 많습니다.</p>
+<h3 id="nkro">nkro</h3>
+<p>한 컴퓨터에서 한 키보드로 두명이 대전게임을 해보신 적 있으신가요? 펑범한 키보드를 썼다면 상대방이 키를 누르고 있을 때 기술이 잘 시전 안되신 경험이 있으실 거에요. 일반적인 키보드는 2-3 키 이상의 키를 동시에 누르는 경우 잘 동작하지 않아요. 아쉽게도 맥북 air의 기본 키보드도 그러더라구요. 왼손 새끼손가락으로 ctrl을, 왼손 엄지로 command를 오른손 엄지로 쉬프트를 누르고 오른쪽 화살표를 입력했는데 동작을 안하더라구요. 물론 원래 키보드의 ctrl/alt/shift 등의 키는 키보드 제조사가 특별히 신경쓴 키라소 여럿을 입력해도 잘 동작해요. 하지만 저는 엄지키 할당을 위해서 일반적이지 않은 키를 누르다보니 여러 키 입력이 동시에 안되더라구요. 대체로 두 개의 키 조합은 다 동작했어요. 하지만 3개의 키를 조합하는 건 50% 이상의 확률도 동작을 안할 때가 많더라구요. 임의의 키의 갯수를 동시에 눌러도 잘 동작하는 키보드를 nkro 를 지원한다고 말해요. air는 전혀 아니더라구요.</p>
+<p>kmonad/kanata 에서 레이어를 상당히 많이 만들 수 있더라구요. 레이어는 하나의 키를 상황에 따라 다른 키로 동작하게 하는 기능이에요. 작은 키보드의 fn 키를 생각하시면 이해할 수 있어요. kmonad/kanata는 자기 자신만의 fn키를 만들어서 쓸 수 있어요. nkro 가 불가능하니 레이어를 많이 많들어서 가능한 두개의 키의 조합으로 원하는 명령어를 입력할수 있게 설정해보고 있어요.</p>
+<h3 id="키보드만-사용해서-화면에-보이는-버튼-클릭하기">키보드만 사용해서 화면에 보이는 버튼 클릭하기</h3>
+<p>이번에 kanata 로 마우스 키를 세팅하면서 관련된 정보를 찾다가 재밌는 프로그램을 찾았어요. homerow 라는 앱입니다. 화면에 있는 버튼을 키보드만으로 쉽게 클릭할 수 있어요. 특수한 단축키를 입력하면 화면 안의 모든 버튼에 이름이 주어져요. 이 이름을 입력하면 해당 버튼이 클릭이 됩니다. 어떻게 되는지 엄청 신기했는데 접근성 기능을 쓴다고 하더라구요. 장애인을 위한 엘리베이터가 비장애인에게도 도움되는 것처럼 accessibility 기능이 비장애인에게도 도움이 되는 기술을 보니 감동적이었어요.</p>
+<h3 id="제-kanata-설정">제 kanata 설정</h3>
+<p>제가 사용하고 있는 레이아웃도 남겨둡니다.
+https://github.com/majecty/dotconfig/blob/main/computers/air/kmonad/upper-default.kbd</p>
+
+<script src="https://utteranc.es/client.js"
+        repo="majecty/blog-comments"
+        issue-term="pathname"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+</script>
+]]></summary>
+</entry>
+<entry>
+    <title>수 GB 의 node_modules와 함께 typescript 서버 배포하기</title>
+    <link href="https://blog.majecty.com/posts/2024-12-27-a-bundle-server-with-node-modules.html" />
+    <id>https://blog.majecty.com/posts/2024-12-27-a-bundle-server-with-node-modules.html</id>
+    <published>2024-12-27T00:00:00Z</published>
+    <updated>2024-12-27T00:00:00Z</updated>
+    <summary type="html"><![CDATA[<div class="info">
+    2024년 12월 27일에 씀
+</div>
+
+<div class="info">
+    
+    찾아보기: <a title="All pages tagged &#39;code&#39;." href="/tags/code.html" rel="tag">code</a>, <a title="All pages tagged &#39;maintenance&#39;." href="/tags/maintenance.html" rel="tag">maintenance</a>
+    
+</div>
+
+<br />
+
+<p>번들링은 보통 프론트엔드 타입스크립트(자바스크립트) 코드를 배포할 때 묶어주는 걸 말합니다. 하지만 간혹 백엔드서도 필요할 때가 있습니다. 이를 알아볼게요.</p>
+<h2 id="이상적인-typescript-배포">이상적인 TypeScript 배포</h2>
+<p>타입스크립트로 작성한 서버는 보통 node_modules 와 함께 배포하면 됩니다. 모든 게 이상적인 상황이라면 package.json의 dependencies에는 백엔드 코드가 사용하는 라이브러리코드가 포함됩니다. 이 라이브러리들과 함께 배포하면 문제가 없죠.</p>
+<p>참kvyv <code>npm install --production</code> 을 실행하면 devDependencies 는 설치되지 않고 dependencies 에 명시된 라이브러리만 설치됩니다. 이를 이용해서 타입스크립트 빌드할 때만 필요한 라이브러리들이 프로덕션에 포함되지 않게 할 수 있습니다.</p>
+<h2 id="이상적이지-않은-상황">이상적이지 않은 상황</h2>
+<p>하지만 살다 보면 이상적이지 않은 상황들도 만나게 됩니다. 최근 두가지 이유로 이상적이지 않은 상황을 만났어요. 하나는 eliza 라는 ai library가 특정 기능에서만 사용하는 거대한 라이브러리를 잔뜩 사용하는 것이었어요. 다른 상황은 mono repo와 관련된 상황입니다. 하나씩 만나볼게요.</p>
+<h3 id="거대한-라이브러리-의존성">거대한 라이브러리 의존성</h3>
+<p>지금 시점에 활발하게 바뀌고 있는 eliza 라는 ai library는 매우 많은 기능을 선택적으로 제공합니다. sqlite3나 postgresql과 같은 database를 선택할 수 있고, 직접 chromium web browser를 통해 데이터를 읽어올 수 있고, 직접 llama ai 모델을 돌릴 수도 있습니다. 이 모든 일을 하기 위한 것들이 dependency에 추가되어있어요. plugin 으로 쪼개진 것들은 사용 안했을 때 import가 안되기도 하지만, 여전히 많은 dpenedency가 사용하지 않더라도 필수적으로 설치가 됩니다.</p>
+<p>이렇게 되면 node_modules를 배포하는 게 부담이 커집니다. 2-3 GB는 쉽게 넘어가게되어요. 배포과정에 시간이 꽤 늘어납니다.</p>
+<h3 id="mono-repo에서-여러-서비스를-운영할-때">mono repo에서 여러 서비스를 운영할 때</h3>
+<p>여러 서비스를 하나의 node package로 관리하는 경우도 문제가 생기기 쉽습니다. 회사에서 진행한 프로젝트 중에서 하나의 package에서 웹서버와 백그라운드 서버 두 개의 코드가 섞여있는 프로젝트가 있었습니다. 웹 서버는 유저의 웹 요청에 대응하는 서버고, 백그라운드 서버는 주기적으로 돌아가는 코드를 돌리는 서버였어요. 많은 코드가 공유되지만 분명히 web server에서만 사용하는 라이브러리와 백그라운드에서 사용하는 라이브러리가 별개로 있었습니다. 각각을 배포할 때 의도치 않게 사용하지 않는 라이브러리들도 같이 포함되었어요.</p>
+<h2 id="bundling의-사용">bundling의 사용</h2>
+<p>이 때 bundling 을 사용해서 문제를 해결할 수 있습니다. bundling을 할 때 node modules 의 라이브러리를 포함시킬 수도 있고, external 등의 설정을 통해서 라이브러리를 포함시키지 않을 수 있습니다. esbuild 나 ncc 같은 도구를 사용하면 별다른 설정을 하지 않고도 특정 파일이 import 하는 라이브러리만 같이 bundling되게 할 수 있습니다.</p>
+<h2 id="목적이-무엇인가">목적이 무엇인가</h2>
+<p>bundling 이 만능은 아닙니다. nodejs 라이브러리들은 브라우저에서 사용하는 라이브러리들에 비해 자유로워요. c++ addon 을 사용할 수도 있고, path 기반으로 파일들을 import할 수도 있습니다. 갑작스럽게 이상하게 동작하는 현상을 만날 수도 있어요.</p>
+<p>결국엔 원하는 게 무엇인지 잘 선택해야합니다. 보수적으로 node_modules를 전부 같이 배포하는 것도 좋은 방법입니다. 프로젝트가 필요로하는 라이브러리만 import하는 것도 좋은 방법이구요. 저는 배포에 걸리는 시간을 줄이기 위해서 필요한 library 만 import하는 방법을 좀 더 자주 사용하고 있습니다.</p>
+
+<script src="https://utteranc.es/client.js"
+        repo="majecty/blog-comments"
+        issue-term="pathname"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+</script>
+]]></summary>
+</entry>
+<entry>
+    <title>제어권을 유지하기</title>
+    <link href="https://blog.majecty.com/posts/2024-11-05-a-ownership-of-control.html" />
+    <id>https://blog.majecty.com/posts/2024-11-05-a-ownership-of-control.html</id>
+    <published>2024-11-05T00:00:00Z</published>
+    <updated>2024-11-05T00:00:00Z</updated>
+    <summary type="html"><![CDATA[<div class="info">
+    2024년 11월  5일에 씀
+</div>
+
+<div class="info">
+    
+    찾아보기: <a title="All pages tagged &#39;code&#39;." href="/tags/code.html" rel="tag">code</a>, <a title="All pages tagged &#39;maintenance&#39;." href="/tags/maintenance.html" rel="tag">maintenance</a>
+    
+</div>
+
+<br />
+
+<p>비슷한 걸 어떻게 구현을 잘 하는 게 좋을까요. 어려운 문제가 상황에 따라 답은 다를 거에요. 여기서는 코드의 중복을 관리하기 위한 하나의 관점에 대해 이야기하려고 합니다. 코드의 제어권에 대한 이야기에요.</p>
+<p>저는 백엔드 엔지니어이기 때문에 백엔드 웹 서버 기준으로 설명할게요. 하나의 API는 각각의 진입점이 있습니다. 두 API가 비슷한 일을 한다고 했을 때 이를 어떻게 구현하면 좋을까요? 두가지 방법을 소개하고 비교할게요. 하나는 제어권을 넘기는 방법이고 다른 하나는 제어권을 API들이 각각 유지하는 방법입니다.</p>
+<p>아래는 제어권을 넘기는 방법입니다. 서로 조금 다른 두가지 일을 다 잘 처리하는 <code>doCommonThing</code> 이라는 함수를 정의해요. <code>doA</code> 와 <code>doB</code> 는 이 함수를 호출하기만 하면 됩니다. 코드가 하는 일의 제어권을 <code>doCommonThing</code> 에 넘기는 방법이에요.</p>
+<pre><code>function doA() {
+  doCommonThing(true);
+}
+
+function doB() {
+  doCommonThing(false);
+}
+
+function doCommonThing(boolean someDifferent) {
+  doX();
+  if (someDifferent) {
+    doY();
+  }
+  doZ();
+}</code></pre>
+<p>아래는 제어권을 유지하는 방법입니다. <code>doA</code> 와 <code>doB</code> 가 하는 일이 유사합니다. 하지만 각 함수에서 무엇을 해야하는지는 진입 포인트에서 각각 작업했어요. <code>doA</code> 와 <code>doB</code> 가 코드의 제어권을 유지하고 있습니다.</p>
+<pre><code>function doA() {
+  doX();
+  doY();
+  doZ();
+}
+
+function doB() {
+  doX();
+  doZ();
+}</code></pre>
+<p>저는 여기에서 두번째 방법인 제어권을 유지하는 방법을 선호합니다. 왜냐하면 <code>doA</code> 를 수정할 때 <code>doB</code> 의 기능이 깨지지 않기 때문입니다.</p>
+<p>세월의 흔적이 쌓인 소프트웨어를 관리하기는 어렵습니다. 오래된 소프트웨어일수록 개발자가 모르는 영역이 많이 쌓여있어요. 개발자는 동작을 다 이해하지 못한 상태로도 기능을 추가하거나 수정을 하게 됩니다. 이 때 각 진입점에서 제어권을 유지하고 있으면 원하는 것만 수정하기 쉬워집니다. 코드의 수정이 의도치 않은 결과를 덜 내도록 관리할 수 있어요. 코드를 수정한 뒤 무엇을 테스트해야하는지도 명확해지구요. 제품을 망가뜨릴지도 모른다는 불안감에서 벗어나 자신감 있게 코드를 작성할 수 있습니다.</p>
+
+<script src="https://utteranc.es/client.js"
+        repo="majecty/blog-comments"
+        issue-term="pathname"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+</script>
+]]></summary>
+</entry>
+<entry>
+    <title>오래된 주석의 가치</title>
+    <link href="https://blog.majecty.com/posts/2024-11-01-a-about-comment.html" />
+    <id>https://blog.majecty.com/posts/2024-11-01-a-about-comment.html</id>
+    <published>2024-11-01T00:00:00Z</published>
+    <updated>2024-11-01T00:00:00Z</updated>
+    <summary type="html"><![CDATA[<div class="info">
+    2024년 11월  1일에 씀
+</div>
+
+<div class="info">
+    
+    찾아보기: <a title="All pages tagged &#39;comment&#39;." href="/tags/comment.html" rel="tag">comment</a>
+    
+</div>
+
+<br />
+
+<p>주석은 과거의 기록입니다. 주석을 항상 최신화하는 건 불가능합니다. 주석에 과거의 의도를 담으면 미래의 개발자에게 코드를 이해하는데 도움이 됩니다.</p>
+<p>주석에 대한 의견들을 찾아보면 주석을 최신화하는 게 중요하다는 의견을 많이 찾아볼 수 있습니다. 지금의 동작과 달라진 과거의 주석은 코드를 잘못 이해시킬 수 있기 때문입니다. 이 관점에서 보자면 주석을 남기는 건 항상 선택의 영역입니다. 주석을 남기는 것의 비용이 크기 때문에 주석으로 인한 미래의 이득과 관리 비용을 저울질해야합니다.</p>
+<p>저도 비슷하게 생각했어요. 지금과는 다른 과거의 동작을 설명하는 주석은 코드 읽기를 방해한다고 생각했습니다. 그렇기 때문에 가능하면 “왜”에 집중하려고 했어요. “어떻게”를 주석에 적으면 낡기 쉽지만 “왜”는 덜 낡기 때문에 “왜”에 집중하려고 했습니다.</p>
+<p>지금도 “왜”에 대한 내용을 적는 게 중요하다고 생각합니다. 하지만 조금 달라진 점이 있어요. 지금과 달라진 과거의 “왜” 역시 의미가 있다고 생각해요. 코드는 끊임없이 변화해요. 어떤 코드는 진화 과정의 꼬리뼈 같은 흔적기관처럼 여전히 남아있지만 왜 있는지 알기 어려워요. 꼬리뼈가 의미가 있던 시절에 “왜” 꼬리뼈가 있었는지에 대한 주석을 남겨놓았다면 미래의 개발자에게 큰 도움이 될 거에요. 물론 의미 없어진 꼬리뼈와 주석 전체를 잘 지울 수 있는 게 제일 좋다고 생각합니다. 꼬리뼈를 잘 지우기 위해서도 과거의 “왜”는 중요하다고 생각해요.</p>
+<p>과거의 프로젝트를 유지보수하는 건 꽤나 동적인 과정이에요. 미래를 예측하기 어려워서 선택했던 잘못된 선택들을 이젠 고치고 정리할 때에요. 이때 과거의 “왜”를 알게 되는 건 코드 삭제와 같은 과감한 결정을 할 때 좋은 지도가 됩니다.</p>
+
+<script src="https://utteranc.es/client.js"
+        repo="majecty/blog-comments"
+        issue-term="pathname"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+</script>
+]]></summary>
+</entry>
+<entry>
+    <title>Java의 마법 - Proxy</title>
+    <link href="https://blog.majecty.com/posts/2022-01-23-c-java-proxy-in-libraries.html" />
+    <id>https://blog.majecty.com/posts/2022-01-23-c-java-proxy-in-libraries.html</id>
+    <published>2022-01-23T00:00:00Z</published>
+    <updated>2022-01-23T00:00:00Z</updated>
+    <summary type="html"><![CDATA[<div class="info">
+    2022년 1월 23일에 씀
+</div>
+
+<div class="info">
+    
+    찾아보기: <a title="All pages tagged &#39;java&#39;." href="/tags/java.html" rel="tag">java</a>, <a title="All pages tagged &#39;proxy&#39;." href="/tags/proxy.html" rel="tag">proxy</a>
+    
+</div>
+
+<br />
+
+<p>이전 글에서 자바의 보수적인 측면을 이야기했다. 자바는 한 번 노출시킨
+인터페이스를 최대한 깨트려 먹지 않으려는 문화를 가지고 있다. 이를
+뒤집어 생각하면 인터페이스만 깨트리지 않으면 구현이 얼마든지 바뀔 수
+있다고 이해할 수 있다. 규칙이 있기 때문에 오히려 창의적이다.</p>
+<h3 id="spring-data-jpa-쿼리가-리턴하는-값">Spring Data JPA 쿼리가 리턴하는 값</h3>
+<p>자바에 익숙지 않을 때 라이브러리에서 클래스에 어노테이션을 다는 게
+이해가 되지 않았다. 자바의 어노테이션은 단순히 추가 정보를 추가하는
+것이고, 어디선가 그 값을 읽어서 쓰게 된다.</p>
+<p>어노테이션이 달린 클래스들의 동작은 쉽게 이해하기 어려웠다. 분명 내가
+만든 클래스를 내가 사용하는데 내가 작성한 코드대로 동작하지 않는다.
+내가 알던 그 클래스가 아니었다. 나는 동작이 궁금할 때 코드를 보고
+완전히 이해하는 걸 좋아한다. 처음에는 내가 짠 자바 코드가 어떻게
+동작하는지 코드를 읽고 이해하고 싶었다. 하지만 쉽지 않았다.
+라이브러리의 함수가 내가 정의한 타입의 값을 리턴하는데 해당 값의
+동작은 내가 작성한 코드와 달랐다.</p>
+<p>회사 일을 하면서 디비에서 정보를 조회하기 위해서 Spring Data JPA를
+사용했다. 이 때 쿼리의 결과로 내가 정의한 클래스가 리턴된다..</p>
+<p><a href="https://www.oracle.com/technical-resources/articles/java/jpa.html">JPA</a>는
+자바에서 객체지향 코드로 디비를 접근하는 표준이다. 하나의
+클래스의 인스턴스가 디비의 하나의 row를 표현한다. 이 row에 필드로 다른
+디비의 row를 연결할 수 있다.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode java"><code class="sourceCode java"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="at">@Entity</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Car <span class="op">{</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">@Id</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="bu">String</span> serialNumber<span class="op">;</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">@OneToMany</span><span class="op">(</span>fetch <span class="op">=</span> FetchType<span class="op">.</span><span class="fu">LAZY</span><span class="op">)</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="bu">List</span><span class="op">&lt;</span>Wheel<span class="op">&gt;</span> wheels<span class="op">;</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>여기서 Car 클래스는 Car 테이블에 대응되고, Car클래스의 인스턴스 하나
+하나가 DB의 row를 의미한다. 여기서 wheels는 lazy loading된다. lazy
+loading의 동작에 대해 알아보자.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode java"><code class="sourceCode java"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>  <span class="bu">List</span><span class="op">&lt;</span>Wheel<span class="op">&gt;</span> myWheels <span class="op">=</span> car<span class="op">.</span><span class="fu">getWheels</span><span class="op">();</span></span></code></pre></div>
+<p>이렇게 <code>getWheels</code>로 <code>List&lt;Wheel&gt;</code> 값을 가져와 <code>myWheels</code> 변수를
+선언했다고 치자. 이 <code>myWheels</code>는 아직 진짜 <code>wheel</code>값을 가지고 있지
+않다. 껍데기만 가지고 있다. <code>myFriends.size()</code>를 호출하면 그제서야
+디비로 쿼리를 보내, 값을 가져온다. 내가 작성한 <code>Car</code>에는 도대체 이런
+코드가 없는데 어떻게 이런 일이 일어난 걸까.</p>
+<p>알고보니 DB library(Hibernate)가 디비 쿼리의 결과물로 내가 작성한
+<code>Car</code> 클래스를 상속한 클래스를 리턴하고 있었다! 나도 모르게 다른
+구현체를 쓰고 있었고, 그 구현체의 코드는 찾아볼 수 없다. 왜냐면
+런타임에 생성된 클래스이기 때문이다.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+<p>마법같은 일이다. 런타임에 내 클래스를 상속해서 proxy 객체를 만든다니.
+런타임에 생성된 클래스이기 때문에 당연히 해당 클래스의 소스코드를
+찾아볼 수 없었다. 난 Hibernate가 내 클래스를 상속해서 어떤 클래스를
+만들어 쓰는지 궁금하다. 이걸 알아내려면 Hibernate가 Proxy를 생성하는
+코드를 읽어야 한다.</p>
+<h3 id="스프링의-di">스프링의 DI</h3>
+<p>이와 비슷한 일이 Spring의 DI에서도 일어난다. Spring DI에서는 꽤 많은
+일이 일어난다. 그 중 하나로 Spring Data JPA를 보자. Spring Data JPA를
+쓸 때 실수하기 좋은 부분이 하나 있다. 바로 메쏘드가 디비 트랜잭션
+안에서 실행되게 만드는 <code>@Transactional</code> annotation이다. 트랜잭션이
+필요한 코드인 경우 메쏘드 위에 <code>@Transactional</code> 어노테이션을 붙이면
+해당 메쏘드는 디비 트랜잭션 안에서 실행된다. 무척 편하다.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode java"><code class="sourceCode java"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> MyFantasticClass <span class="op">{</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">void</span> <span class="fu">countUp10Times</span><span class="op">()</span> <span class="op">{</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> <span class="op">(</span><span class="dt">int</span> i<span class="op">=</span><span class="dv">0</span><span class="op">;</span> i<span class="op">&lt;</span><span class="dv">10</span><span class="op">;</span> i<span class="op">+=</span><span class="dv">1</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>      <span class="fu">countUp</span><span class="op">();</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">@Transactional</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>  <span class="dt">void</span> <span class="fu">countUp</span><span class="op">()</span> <span class="op">{</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    Counter counter <span class="op">=</span> <span class="kw">this</span><span class="op">.</span><span class="fu">countRepository</span><span class="op">.</span><span class="fu">getById</span><span class="op">(</span><span class="dv">1</span><span class="op">);</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    counter<span class="op">.</span><span class="fu">countUp</span><span class="op">();</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    <span class="kw">this</span><span class="op">.</span><span class="fu">countRepository</span><span class="op">.</span><span class="fu">save</span><span class="op">(</span>counter<span class="op">);</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>이 코드의 <code>myFantasticClass.countUp()</code>을 호출하면 <code>countUp</code>은 디비
+트랜잭션 안에서 실행된다. 하지만 <code>myFantasticClass.countUp10Times()</code>를
+실행하면 디비 트랜잭션이 실행 안된다.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
+<p>왜일까. 그 이유는 <code>@Transactional</code>가 사용되는 방법과 관련된어 있다.
+<code>MyFantasticClass</code>에는 디비 트랜잭션을 실행하고 끄는 코드가 없다. 이
+클래스를 <code>new MyFantasticClass()</code>로 생성하면 <code>@Transactional</code>이 아무
+역할도 하지 않는다. <code>@Transactional</code>은 <code>MyFantasticClass</code>를 DI를
+통해서 주입받을 때 효과를 발휘한다.</p>
+<p>Spring DI는 <code>MyFantasticClass</code> 인스턴스를 받은 뒤 <code>MyFantasticClass</code>를
+상속한 새로운 클래스로 해당 인스턴스를 감싸서 리턴한다.<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a> 따라서
+디비 트랜잭션을 시작하고, 끝날 때 commit하는 코드는
+<code>MyFantasticClass</code>를 상속한 클래스에 들어간다.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode java"><code class="sourceCode java"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">// 이런 식으로 구현된다고 이해할 수 있다.</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> MyFantasticGeneratedSubClass <span class="kw">extends</span> MyFantasticClass <span class="op">{</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="kw">private</span> MyFantasticClass inner<span class="op">;</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">void</span> <span class="fu">countUp10Times</span><span class="op">()</span> <span class="op">{</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    inner<span class="op">.</span><span class="fu">countUp10Times</span><span class="op">();</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  <span class="dt">void</span> <span class="fu">countUp</span><span class="op">()</span> <span class="op">{</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">startTransaction</span><span class="op">();</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    inner<span class="op">.</span><span class="fu">countUp</span><span class="op">();</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">commitTransaction</span><span class="op">();</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>DI로 주입받은 <code>myFantastiClass</code>의 <code>.countUp()</code>을 호출하면 무슨 일이
+일어날까. 당연히 함수의 앞뒤로 트랜잭션의 시작과 commit이 호출된다.
+그렇다면 DI로 주입받은 <code>myFantasticClass</code>의 <code>countUp10Times</code>를
+호출하면 무슨 일이 일어날까. 해당 함수는 <code>@Transactional</code>이 없기
+때문에 앞뒤에 추가되는 코드가 없다. 그리고 그 안에서 <code>countUp</code>을
+호출하면 원본 코드의 <code>countUp</code>이 실행되기 때문에 디비 트랜잭션이
+실행되지 않는다!<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a></p>
+<h3 id="클래스는-구현이-첨가된-인터페이스일-뿐">클래스는 구현이 첨가된 인터페이스일 뿐</h3>
+<p>자바 코드를 작성하면서 “클래스 역시 구현이 조금 추가된 인터페이스”라고
+느꼈다. 언제든지 상속을 통해 확장될 수 있다. 라이브러리가 어떤 일을
+하는지 알고싶으면 문서를 찾아봐야한다. Spring Data JPA, Hibernate 모두
+방대한 문서를 제공하고 그 안에 동작 방식이 설명되어 있다.</p>
+<p><a href="./2022-01-23-b-java-conservative-patterns.html">이전 글 - Java는 보수적이야</a></p>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1"><p>Hibernate의 유저 가이드에서 <a href="https://docs.jboss.org/hibernate/orm/5.4/userguide/html_single/Hibernate_User_Guide.html#entity">Entity types 섹션</a>
+을 보면 Proxy에 대한 내용을 찾아볼 수 있다.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>Spring의 <a href="https://docs.spring.io/spring-framework/docs/4.2.x/spring-framework-reference/html/transaction.html#tx-decl-explained">Understanding the Spring Framework’s declarative transaction implementation</a>
+에 무슨 일이 일어나는지 잘 설명되어 있다.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>JDK Dynamic Proxy 혹은 cglib을 사용해서 구현한다.
+<a href="https://docs.spring.io/spring-framework/docs/4.2.x/spring-framework-reference/html/aop.html#aop-understanding-aop-proxies">understanding aop proxies</a>
+문서를 보면 더 잘 이해할수 있다.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p>Spring AOP에서는 이를 self-invocation이라고 부른다.
+<code>@Transactional</code>뿐만 아니라 Spring AOP를 쓰는 코드에서는 항상
+발생한다. AspectJ를 사용하면 이 문제를 회피할 수 있다.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+
+<script src="https://utteranc.es/client.js"
+        repo="majecty/blog-comments"
+        issue-term="pathname"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+</script>
+]]></summary>
+</entry>
+<entry>
+    <title>Java는 보수적이야</title>
+    <link href="https://blog.majecty.com/posts/2022-01-23-b-java-conservative-patterns.html" />
+    <id>https://blog.majecty.com/posts/2022-01-23-b-java-conservative-patterns.html</id>
+    <published>2022-01-23T00:00:00Z</published>
+    <updated>2022-01-23T00:00:00Z</updated>
+    <summary type="html"><![CDATA[<div class="info">
+    2022년 1월 23일에 씀
+</div>
+
+<div class="info">
+    
+    찾아보기: <a title="All pages tagged &#39;java&#39;." href="/tags/java.html" rel="tag">java</a>, <a title="All pages tagged &#39;compatibility&#39;." href="/tags/compatibility.html" rel="tag">compatibility</a>
+    
+</div>
+
+<br />
+
+<p>10년 전에 자바를 공부하면서 이해가 안 되었던 지점들이 지금 와서는
+이해가 되는 부분들이 있다. getter/setter를 쓰는 거나 생성자를 잘 안
+쓰는 점들이다. 그 때는 괜히 타자를 많이 치게 만든다고 생각했었다.
+비슷한 시기에 웹 개발을 공부하면서 루비를 봤었는데, 루비는 자바에 비해
+간결하다고 느껴져서 좋아했었다.</p>
+<p>이전 글에서도 이야기 했듯이, 자바에서는 한 번 노출한 인터페이스를 다음
+버전에서도 잘 지키는 게 중요하다. 따라서 외부에 노출시킨 인터페이스를
+수정하지 않는 상태에서 구현을 쉽게 바꿀 수 있는 방법이 발달한 거 같다.
+이 기준을 바탕으로 생각하면 여러 디자인 선택들을 쉽게 이해할 수 있다.</p>
+<h3 id="생성자를-잘-안-쓰는-이유">생성자를 잘 안 쓰는 이유</h3>
+<p><a href="http://www.yes24.com/Product/Goods/65551284">Effective Java</a>의 첫
+번째 아이템이 “생성자 대신 정적 팩토리 메서드를 고려하다”이다.
+생성자는 정적 팩토리 메서드에 비해 구현에 의존적이다. 생성자는 딱 그
+타입만 만들 수 있지만, 정적 팩토리 메서드는 자식 타입을 대신 리턴할 수
+있다. 다양한 구현을 만들고 쉽게 바꿔칠 수 있다.</p>
+<p>내가 라이브러리를 만들어서 노출했을 때 생성자를 노출했다면 앞으로 해당
+타입에 모든 기능을 집어넣어야 한다. 하지만 정적 팩토리 메서드는 여러
+타입을 구현하고, 그 중 하나를 골라서 리턴하는 식으로 확장이 가능하다.</p>
+<h3 id="dependency-injection">Dependency injection</h3>
+<p>디펜던시 인젝션이 필요한 이유도 같은 맥락에서 이해할 수 있다. 객체를
+생성하는 건 기능에 비해 자주 바뀔 수 있다. 디펜던시 인젝션을 통해
+객체의 생성을 외부로 빼내면 해당 디펜던시의 구현을 쉽게 바꿀 수 있다.</p>
+<h3 id="gettersetter">getter/setter</h3>
+<p>getter/setter를 안 쓰고 필드를 노출시키면 어떻게 될까. 클래스의 동작을
+바꾸다 보면 내부 필드의 타입을 바꿀 일이 있다. 예를 들어 Person
+클래스의 name 필드를 처음엔 String으로 관리하다가 나중엔 First name과
+Last name으로 분리할 수도 있다. 이 때 name 필드를 노출했다면 이
+라이브러리를 사용하던 코드가 깨지게 된다. 하지만 getter/setter를
+쓴다면 이전 인터페이스를 깨지 않고 구현을 바꿀 수 있다.</p>
+<h3 id="상속에-대한-다른-관점">상속에 대한 다른 관점</h3>
+<p>외부로 노출시킨 인터페이스를 꾸준히 잘 지키는 게 중요하다. 이걸 반대로
+생각하면, 외부로 노출시킨 인터페이스만 그대로 지켜주면, 그 내부 구현이
+어떻게 바뀌어도 상관없다고도 볼 수 있다. 자바에서 유명한 DB
+라이브러리인 Hibernate나 Spring Data JPA를 쓰다 보면 내가 만든 타입이
+나도 몰래 상속되어서 구현이 바뀌는 상황을 볼 수 있다.</p>
+<p>이 재밌는 상황에 대해서는 다음 글에서 이어 이야기하겠다.</p>
+<p><a href="./2022-01-23-a-java-dependency.html">이전 글 - Java에서는 라이브러리 쓰기가 무섭다</a></p>
+<p><a href="./2022-01-23-c-java-proxy-in-libraries.html">다음 글 - Java의 마법 - Proxy</a></p>
+
+<script src="https://utteranc.es/client.js"
+        repo="majecty/blog-comments"
+        issue-term="pathname"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+</script>
+]]></summary>
+</entry>
+
+</feed>

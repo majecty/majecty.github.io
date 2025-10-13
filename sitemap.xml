@@ -1,0 +1,424 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+    <url>
+        <loc>https://blog.majecty.com/posts/2025-10-14-a-what-solana-programs-can-and-cannot-do.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/posts/2025-10-12-a-anchor-simplifies-solana-accounts-but-struggles.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/posts/2025-10-01-a-beyond-langgraph.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/posts/2025-09-28-a-llm-api-chatbot.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/posts/2025-05-03-a-kanata-kmonad-one-row-up.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/posts/2024-12-27-a-bundle-server-with-node-modules.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/posts/2024-11-05-a-ownership-of-control.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/posts/2024-11-01-a-about-comment.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/posts/2022-01-23-c-java-proxy-in-libraries.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/posts/2022-01-23-b-java-conservative-patterns.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/posts/2022-01-23-a-java-dependency.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/posts/2022-01-22-a-2022-mobile-interactive-screen-resolution.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/posts/2021-12-03-a-why-we-need-netty.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/posts/2021-08-22-a-understanding-gradle-3.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/posts/2021-07-17-b-understanding-gradle-2.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/posts/2021-07-17-a-understanding-gradle-1.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/posts/2021-01-04-a-manage-private-key.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/posts/2021-01-01-a-blockchain-db.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/posts/2020-12-29-a-ethereum-state-trie-in-db.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/posts/2020-12-28-b-ethereum-immutable-data-structure.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/posts/2020-12-28-a-tendermint.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/posts/2020-12-27-b-how-safe-best-block.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/posts/2020-12-27-a-p2p-update-strategy.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/posts/2020-12-13-blockchain-pow-economic-incentive.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/posts/2020-04-26-track-the-gnome-tweak.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/posts/2019-10-03-react-component-pure-component.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/posts/2018-12-31-a-rust-serde-derive-value.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/posts/2018-12-01-a-rust-trait-generic-trait-object.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/posts/2018-11-24-a-rust-semicolon-expression.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/posts/2018-11-17-a-making-simple-dialogue-system-using-coroutine.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/posts/2017-03-24-a-cocos-creator-keyboard-input.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/posts/2016-07-28-a-git.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/posts/2016-07-09-a-unity-ui-button-cickable.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/posts/2016-07-05-a-communication-tools.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/posts/2016-06-28-a-working-with-other-programmers.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/posts/2016-06-19-a-why-unity-is-better-choice-in-club.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/posts/2016-06-12-a-fold-in-ihaskell.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/posts/2016-06-06-b-foldr-on-functions.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/posts/2016-06-06-a-foldr-and-tuple.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/posts/2016-06-04-c-make-map-and-filter-using-foldr.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/posts/2016-06-04-b-foldr-and-foldl.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/posts/2016-06-04-a-foldr.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/posts/2016-06-02-a-call-c-function-in-haskell.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/wikis/2016-07-12-library-path.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/wikis/2018-11-21-root-relative-url.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/wikis/2018-11-23-a-rust-lifetime.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/wikis/2018-11-23-b-rust-lifetime-move.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/wikis/2018-11-23-c-rust-lifetime-trait.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/wikis/2018-11-24-a-rust-lifetime-struct.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/wikis/2018-12-01-b-trait-plus-lifetime.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/wikis/2018-12-31-a-bat-code.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/wikis/2019-01-01-a-rust-send-sync.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/wikis/2019-01-06-a-pbkdf2.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/wikis/2019-01-13-a-systemd-user.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/wikis/2019-01-19-a-gpg.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/wikis/2019-02-06-a-powershell.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/wikis/2019-02-09-a-windows-noti.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/wikis/2019-03-03-a-ansible-vs-chef.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/wikis/2020-05-30-a-ln.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+    <url>
+        <loc>https://blog.majecty.com/wikis/2021-01-01-a-lsm-tree.html</loc>
+        <changefreq>daily</changefreq>
+        
+        <priority>0.8</priority>
+    </url>
+
+</urlset>

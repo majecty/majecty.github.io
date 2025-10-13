@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <meta property="og:type" content="website">
+        <meta property="og:title" content="주형 Blog - Rust serde derive와 Value">
+        <meta property="og:image" content="https://blog.majecty.com/favicon_310.png">
+
+        <link rel="icon" type="image/png" href="../favicon_16.png" sizes="16x16">
+        <link rel="icon" type="image/png" href="../favicon_32.png" sizes="32x32">
+        <link rel="icon" type="image/png" href="../favicon_96.png" sizes="96x96">
+        <link rel="icon" type="image/png" href="../favicon_310.png" sizes="310x310">
+
+        <title>주형 Blog - Rust serde derive와 Value</title>
+        <link rel="stylesheet" type="text/css" href="../css/default.css" />
+        <link rel="stylesheet" type="text/css" href="../css/syntax.css" />
+        <link rel="home" type="application/rss+xml" href="https://blog.majecty.com/atom.xml" />
+
+        <link href="//cdn.muicss.com/mui-0.9.41/css/mui.min.css" rel="stylesheet" type="text/css" />
+        <script src="//cdn.muicss.com/mui-0.9.41/js/mui.min.js"></script>
+
+        <link href="https://fonts.googleapis.com/css?family=Nanum+Gothic+Coding" rel="stylesheet"> 
+        <link href="https://fonts.googleapis.com/css?family=Nanum+Gothic" rel="stylesheet">
+        <script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-78778924-1', 'auto');
+ga('send', 'pageview');
+
+        </script>
+
+    </head>
+    <body class="mui-container">
+        <div style="margin:5px;">
+            <div id="header">
+                <div id="logo">
+                    
+                    <a href="../">주형 블로그</a>
+                    
+                </div>
+                <div id="navigation">
+                    
+                    <a href="../">Home</a>
+                    
+                    <a href="../contact.html">Contact</a>
+                    <a href="../wikis.html">Wiki</a>
+                </div>
+            </div>
+
+            <div id="content">
+                
+                <h1>Rust serde derive와 Value</h1>
+                
+
+                <div class="info">
+    2018년 12월 31일에 씀
+</div>
+
+<div class="info">
+    
+    찾아보기: <a title="All pages tagged 'rust'." href="../tags/rust.html" rel="tag">rust</a>, <a title="All pages tagged 'serde'." href="../tags/serde.html" rel="tag">serde</a>, <a title="All pages tagged 'JSON'." href="../tags/JSON.html" rel="tag">JSON</a>
+    
+</div>
+
+<br />
+
+<h2 id="tldr">tldr;</h2>
+<p>형식이 정해진 JSON 데이터는 struct나 enum으로 serialize/deserialize하고, 형식이 자유로운 데이터는 Value 타입을 사용하자.</p>
+<h2 id="derive-방식">Derive 방식</h2>
+<p>Rust에서 JSON 객체를 파싱할 때 가장 기본적인 방법은 struct로 변환하는 것이다. serde의 derive는 대부분의 타입에 대해서 serialize/deserialize 코드를 자동으로 생성한다.</p>
+<p>struct 타입의 값을 JSON으로 serialize/deserialize 하려면 JSON 데이터의 형태가 고정되어있어야한다.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">// struct의 serialize / deserialize 예시</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="at">#[</span>macro_use<span class="at">]</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="kw">extern</span> <span class="kw">crate</span> serde_derive<span class="op">;</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="kw">extern</span> <span class="kw">crate</span> serde<span class="op">;</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="kw">extern</span> <span class="kw">crate</span> serde_json<span class="op">;</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="at">#[</span>derive<span class="at">(</span>Serialize<span class="op">,</span> Deserialize<span class="op">,</span> <span class="bu">Debug</span><span class="at">)]</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> Person <span class="op">{</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  name<span class="op">:</span> <span class="dt">String</span><span class="op">,</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>  age<span class="op">:</span> <span class="dt">i32</span><span class="op">,</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="kw">fn</span> main() <span class="op">{</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> person<span class="op">:</span> Person <span class="op">=</span> Person <span class="op">{</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>    name<span class="op">:</span> <span class="st">&quot;jh&quot;</span><span class="op">.</span>to_string()<span class="op">,</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>    age<span class="op">:</span> <span class="dv">3</span><span class="op">,</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>  <span class="op">};</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> serialized <span class="op">=</span> <span class="pp">serde_json::</span>to_string(<span class="op">&amp;</span>person)<span class="op">.</span>unwrap()<span class="op">;</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>  <span class="pp">println!</span>(<span class="st">&quot;Serialized {}&quot;</span><span class="op">,</span> serialized)<span class="op">;</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>  <span class="co">// Serialized {&quot;name&quot;:&quot;jh&quot;,&quot;age&quot;:3}</span></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> deserialized<span class="op">:</span> Person <span class="op">=</span> <span class="pp">serde_json::</span>from_str(<span class="op">&amp;</span>serialized)<span class="op">.</span>unwrap()<span class="op">;</span></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>  <span class="pp">println!</span>(<span class="st">&quot;Deserialized {:?}&quot;</span><span class="op">,</span> deserialized)<span class="op">;</span></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>  <span class="co">// Deserialized Person { name: &quot;jh&quot;, age: 3 }</span></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>위 코드는 Person struct를 serialize/deserialize하는 예시이다. 위와 같이 형식이 정해져있는 JSON 데이터는 쉽게 변환이 가능하다.</p>
+<h2 id="형식이-정해져있지-않은-데이터의-처리">형식이 정해져있지 않은 데이터의 처리</h2>
+<p>하지만 모든 데이터의 형식이 정해져있는 것은 아니다. 유저가 직접 JSON을 생성해 넣는다면 가능한 임의의 값이 키값으로 생성될 수 있다. serde json의 Value타입을 사용하면 이런 타입들을 쉽게 serialize/deserialize할 수 있다.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">// value의 serialize / deserialize 예시</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="kw">extern</span> <span class="kw">crate</span> serde<span class="op">;</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="kw">extern</span> <span class="kw">crate</span> serde_json<span class="op">;</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="kw">use</span> <span class="pp">serde_json::</span>Value<span class="op">;</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="kw">fn</span> main() <span class="op">{</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> data <span class="op">=</span> <span class="st">r#&quot;{</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="st">                  &quot;name&quot;: &quot;jh&quot;,</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="st">                  &quot;age&quot;: 73</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="st">              }&quot;#</span><span class="op">;</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>  <span class="kw">let</span> v<span class="op">:</span> Value <span class="op">=</span> <span class="pp">serde_json::</span>from_str(data)<span class="op">.</span>unwrap()<span class="op">;</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>  <span class="pp">println!</span>(<span class="st">&quot;name is {}, age is {}&quot;</span><span class="op">,</span> v[<span class="st">&quot;name&quot;</span>]<span class="op">,</span> v[<span class="st">&quot;age&quot;</span>])<span class="op">;</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>위 예시는 JSON string을 Value로 읽어오는 예시이다.</p>
+<h2 id="두-방식의-혼합">두 방식의 혼합</h2>
+<p>JSON 데이터가 일부분은 형식이 정해져있고 일부분은 형식이 안정해져있을 수 이다. 이 경우 derive방식과 Value방식을 혼합하여 사용할 수 있다. Serialize 트레잇을 정의한 타입은 serde_json::to_value를 사용하여 해당 타입을 Value타입으로 변환할 수 있다. Deserialize 트레엣을 정의한 타입은 serde_json::from_value를 사용하여 Value타입에서 원하는 타입으로 변환할 수 있다.</p>
+
+<script src="https://utteranc.es/client.js" repo="majecty/blog-comments" issue-term="pathname" theme="github-light" crossorigin="anonymous" async>
+</script>
+
+            </div>
+            <div id="footer">
+                Site proudly generated by
+                <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+            </div>
+        </div>
+        <script type="text/javascript" src="https://wcs.naver.net/wcslog.js"></script>
+        <script type="text/javascript">
+        if(!wcs_add) var wcs_add = {};
+        wcs_add["wa"] = "1204a977388eb38";
+        wcs_do();
+        </script>
+    </body>
+</html>

@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <meta property="og:type" content="website">
+        <meta property="og:title" content="주형 Blog - Netty의 이해 - 왜 필요할까">
+        <meta property="og:image" content="https://blog.majecty.com/favicon_310.png">
+
+        <link rel="icon" type="image/png" href="../favicon_16.png" sizes="16x16">
+        <link rel="icon" type="image/png" href="../favicon_32.png" sizes="32x32">
+        <link rel="icon" type="image/png" href="../favicon_96.png" sizes="96x96">
+        <link rel="icon" type="image/png" href="../favicon_310.png" sizes="310x310">
+
+        <title>주형 Blog - Netty의 이해 - 왜 필요할까</title>
+        <link rel="stylesheet" type="text/css" href="../css/default.css" />
+        <link rel="stylesheet" type="text/css" href="../css/syntax.css" />
+        <link rel="home" type="application/rss+xml" href="https://blog.majecty.com/atom.xml" />
+
+        <link href="//cdn.muicss.com/mui-0.9.41/css/mui.min.css" rel="stylesheet" type="text/css" />
+        <script src="//cdn.muicss.com/mui-0.9.41/js/mui.min.js"></script>
+
+        <link href="https://fonts.googleapis.com/css?family=Nanum+Gothic+Coding" rel="stylesheet"> 
+        <link href="https://fonts.googleapis.com/css?family=Nanum+Gothic" rel="stylesheet">
+        <script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-78778924-1', 'auto');
+ga('send', 'pageview');
+
+        </script>
+
+    </head>
+    <body class="mui-container">
+        <div style="margin:5px;">
+            <div id="header">
+                <div id="logo">
+                    
+                    <a href="../">주형 블로그</a>
+                    
+                </div>
+                <div id="navigation">
+                    
+                    <a href="../">Home</a>
+                    
+                    <a href="../contact.html">Contact</a>
+                    <a href="../wikis.html">Wiki</a>
+                </div>
+            </div>
+
+            <div id="content">
+                
+                <h1>Netty의 이해 - 왜 필요할까</h1>
+                
+
+                <div class="info">
+    2021년 12월  3일에 씀
+</div>
+
+<div class="info">
+    
+    찾아보기: <a title="All pages tagged 'java'." href="../tags/java.html" rel="tag">java</a>, <a title="All pages tagged 'netty'." href="../tags/netty.html" rel="tag">netty</a>
+    
+</div>
+
+<br />
+
+<p>회사에서 동료분들과
+<a href="https://github.com/zeroFruit/el">Java Non blocking IO 라이브러리를 재구현해보는 스터디</a>를
+하고 있다. 그 과정에서 Netty를 공부한 내용을 정리한다.</p>
+<h2 id="nio는-불편해">nio는 불편해</h2>
+<p>Java의 nio를 사용해서 직접 non blocking IO 코드를 작성하는 건
+불편하다. Java의 <a href="https://docs.oracle.com/en/java/javase/15/core/java-nio.html">nio
+패키지</a>는
+non blocking IO를 제공한다. non blocking IO는 네트워크로 데이터를
+보내거나 받을 때 쓰레드가 블록킹되지 않는 IO 처리 방식을 말한다. nio의
+non blocking 기능을 사용하면 한 쓰레드만 사용해서 여러 소켓에서 오는
+데이터를 기다릴 수 있다.</p>
+<h2 id="여러-쓰레드-사용의-필요성">여러 쓰레드 사용의 필요성</h2>
+<p>비지니스 코드에서 nio의 non blocking IO를 직접 사용하는 건 많이
+불편하다. 비지니스 코드를 짜다 보면 다양한 IO가 필요하다.
+하나의 행동을 하기 위해 데이터베이스에 값을 쓰거나 외부 REST API
+요청을 보내야 한다. 일반적으로 해야할 일들이 순차적으로 있고 중간
+중간에 IO 작업을 하게 된다.</p>
+<p>non blocking IO는 아까 말했듯이 한 쓰레드가 여러 IO 이벤트 발생을
+기다리는 구조다. 비지니스 로직은 실행하던 중간에 IO를 기다려야하고
+IO가 끝나면 다시 실행해야 한다. 비지니스 코드 흐름과 non blocking IO
+처리 코드를 잘 관리하기는 꽤 힘들다.</p>
+<h2 id="그래서-netty가-도와준다">그래서 Netty가 도와준다</h2>
+<p>Netty를 사용하면 Netty가 간결한 쓰레드 구조를 제공해준다. Netty는
+<code>EventLoop</code> 타 입을 제공한다. 이 루프는 싱글 쓰레드로 동작하면서
+필요한 네트워크 이벤트를 기다리고, IO 이벤트 이후 해야하는 일 처리를
+해준다. 비지니스 코드에서는 네트워크 처리 이후 할 일을 콜백함수
+형식으로 이벤트 루프에 넘겨주면 된다. 이벤트 루프는 IO가 잘 처리된
+이후 필요한 콜백을 호출해준다.</p>
+<p>콜백들이 항상 한 쓰레드에서 실행한다는 게 보장되기 때문에 비지니스
+로직도 쓰레드 걱정 없이 작성할 수 있다.</p>
+<h2 id="간단하게-netty의-eventloop를-쓰는-예제를-봐보자">간단하게 Netty의 EventLoop를 쓰는 예제를 봐보자</h2>
+<p>다음처럼 이벤트 루프에 다음에 할 콜백들을 등록할 수 있다. Network
+코드가 추가되면 예시가 복잡해져서 <code>EventLoop</code>가 콜백을 호출하는
+예시만 작성했다 .<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+<p>전체 코드는
+<a href="https://github.com/majecty/any-study/blob/da100a5221982835a46258643c3465edd84ab3d2/java/netty/app/src/main/java/dev/juhyung/study/netty/eventloop/EventLoopExample.java">이 링크</a>에
+있다.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode java"><code class="sourceCode java"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="kw">class</span> EventLoopExample <span class="op">{</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="kw">public</span> <span class="dt">static</span> <span class="dt">void</span> <span class="fu">main</span><span class="op">(</span><span class="bu">String</span><span class="op">[]</span> args<span class="op">)</span> <span class="kw">throws</span> <span class="bu">InterruptedException</span> <span class="op">{</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">final</span> <span class="dt">var</span> eventLoop <span class="op">=</span> <span class="kw">new</span> <span class="fu">DefaultEventLoop</span><span class="op">();</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    eventLoop<span class="op">.</span><span class="fu">schedule</span><span class="op">(</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>        <span class="op">()</span> <span class="op">-&gt;</span> <span class="op">{</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>          <span class="bu">System</span><span class="op">.</span><span class="fu">out</span><span class="op">.</span><span class="fu">println</span><span class="op">(</span><span class="st">&quot;run in 100 millisec later&quot;</span><span class="op">);</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>          eventLoop<span class="op">.</span><span class="fu">shutdownGracefully</span><span class="op">();</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>        <span class="op">},</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>        <span class="dv">100</span><span class="op">,</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>        <span class="bu">TimeUnit</span><span class="op">.</span><span class="fu">MILLISECONDS</span><span class="op">);</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    eventLoop<span class="op">.</span><span class="fu">submit</span><span class="op">(</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>        <span class="op">()</span> <span class="op">-&gt;</span> <span class="op">{</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>          <span class="bu">System</span><span class="op">.</span><span class="fu">out</span><span class="op">.</span><span class="fu">println</span><span class="op">(</span><span class="st">&quot;run immediately&quot;</span><span class="op">);</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>        <span class="op">});</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>    eventLoop<span class="op">.</span><span class="fu">awaitTermination</span><span class="op">(</span><span class="dv">1</span><span class="op">,</span> <span class="bu">TimeUnit</span><span class="op">.</span><span class="fu">SECONDS</span><span class="op">);</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<h2 id="그래도-자바인데-여러-쓰레드를-써야하지-않을까">그래도 자바인데 여러 쓰레드를 써야하지 않을까</h2>
+<p>당연히 멀티 쓰레드를 활용할 수 있다. 하나의 <code>EventLoop</code>는 하나의
+쓰레드만을 사용하지만 하나의 Netty 프로그램은 여러 <code>EventLoop</code>를
+사용한다. 예를 들어 400개의 소켓 을 관리한다면 100개의 소켓을 관리하는
+4 개의 <code>EventLoop</code>를 사용한다.</p>
+<h2 id="결론">결론</h2>
+<p>nio로 non blocking IO를 직접 하는 건 꽤 귀찮고, Netty를 사용하면 좀
+더 편하게 코 드를 작성할 수 있다.</p>
+<h2 id="참고">참고</h2>
+<ul>
+<li>네티의 쓰레드 모델은 잘 설명된 공식 문서가 없다. 대신 <a href="https://www.amazon.com/Netty-Action-Norman-Maurer-ebook-dp-B0977YYX1C/dp/B0977YYX1C/ref=mt_other?_encoding=UTF8&amp;me=&amp;qid=">Netty in
+Action</a>책을
+보면 잘 설명되어 있다.</li>
+</ul>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1"><p>사실 Netty를 사용하면 EventLoop를
+직접사용할 일이 없다. 보통 ChannelHandler라는 interface를
+사용한다.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+
+<script src="https://utteranc.es/client.js" repo="majecty/blog-comments" issue-term="pathname" theme="github-light" crossorigin="anonymous" async>
+</script>
+
+            </div>
+            <div id="footer">
+                Site proudly generated by
+                <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+            </div>
+        </div>
+        <script type="text/javascript" src="https://wcs.naver.net/wcslog.js"></script>
+        <script type="text/javascript">
+        if(!wcs_add) var wcs_add = {};
+        wcs_add["wa"] = "1204a977388eb38";
+        wcs_do();
+        </script>
+    </body>
+</html>

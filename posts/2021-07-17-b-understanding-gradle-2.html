@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <meta property="og:type" content="website">
+        <meta property="og:title" content="주형 Blog - build.gradle 이해하기 2 - Gradle task">
+        <meta property="og:image" content="https://blog.majecty.com/favicon_310.png">
+
+        <link rel="icon" type="image/png" href="../favicon_16.png" sizes="16x16">
+        <link rel="icon" type="image/png" href="../favicon_32.png" sizes="32x32">
+        <link rel="icon" type="image/png" href="../favicon_96.png" sizes="96x96">
+        <link rel="icon" type="image/png" href="../favicon_310.png" sizes="310x310">
+
+        <title>주형 Blog - build.gradle 이해하기 2 - Gradle task</title>
+        <link rel="stylesheet" type="text/css" href="../css/default.css" />
+        <link rel="stylesheet" type="text/css" href="../css/syntax.css" />
+        <link rel="home" type="application/rss+xml" href="https://blog.majecty.com/atom.xml" />
+
+        <link href="//cdn.muicss.com/mui-0.9.41/css/mui.min.css" rel="stylesheet" type="text/css" />
+        <script src="//cdn.muicss.com/mui-0.9.41/js/mui.min.js"></script>
+
+        <link href="https://fonts.googleapis.com/css?family=Nanum+Gothic+Coding" rel="stylesheet"> 
+        <link href="https://fonts.googleapis.com/css?family=Nanum+Gothic" rel="stylesheet">
+        <script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-78778924-1', 'auto');
+ga('send', 'pageview');
+
+        </script>
+
+    </head>
+    <body class="mui-container">
+        <div style="margin:5px;">
+            <div id="header">
+                <div id="logo">
+                    
+                    <a href="../">주형 블로그</a>
+                    
+                </div>
+                <div id="navigation">
+                    
+                    <a href="../">Home</a>
+                    
+                    <a href="../contact.html">Contact</a>
+                    <a href="../wikis.html">Wiki</a>
+                </div>
+            </div>
+
+            <div id="content">
+                
+                <h1>build.gradle 이해하기 2 - Gradle task</h1>
+                
+
+                <div class="info">
+    2021년 7월 17일에 씀
+</div>
+
+<div class="info">
+    
+    찾아보기: <a title="All pages tagged 'java'." href="../tags/java.html" rel="tag">java</a>, <a title="All pages tagged 'gradle'." href="../tags/gradle.html" rel="tag">gradle</a>, <a title="All pages tagged 'groovy'." href="../tags/groovy.html" rel="tag">groovy</a>, <a title="All pages tagged 'understanding-gradle'." href="../tags/understanding-gradle.html" rel="tag">understanding-gradle</a>
+    
+</div>
+
+<br />
+
+<ul>
+<li><a href="./2021-07-17-a-understanding-gradle-1.html">build.gradle 이해하기 1 - Gradle은 무엇인가</a></li>
+<li><a href="./2021-07-17-b-understanding-gradle-2.html">build.gradle 이해하기 2 - Gradle task</a></li>
+<li><a href="./2021-08-22-a-understanding-gradle-3.html">build.gradle 이해하기 3 - Groovy 문법 이해</a></li>
+</ul>
+<p>이 글에서는 Java 프로젝트를 빌드하기 위해 많이 사용하는 Gradle의 기본 개념을 익힌다.</p>
+<h2 id="task의-개념">Task의 개념</h2>
+<p>Gradle에서 가장 기본이 되는 개념은 Task다</p>
+<p>우리는 빌드 도구를 사용해서 다양한 작업들을 한다.
+소스코드를 빌드하기, 테스트하기, 린트 돌리기, 빌드 결과물 지우기 등의 작업들은 물론
+특정 테스트만 돌리거나, 특정 플랫폼을 위한 결과물 빌드, 배포 등 프로젝트마다
+다양한 작업들을 빌드 도구로 실행한다.</p>
+<p>빌드도구는 이런 다양한 동작들을 지원하기 위해서 사용자가 쉽게 동작을 정의할 수 있게 한다.
+Gradle에서는 이런 각각의 동작들을 Task라고 부른다.
+유저는 쉽게 Task를 정의하고, 실행할 수 있다.</p>
+<h2 id="task-예시">Task 예시</h2>
+<p>Task 개념에 익숙해지기 위하여
+Task를 직접 정의하고 실행해보자.
+아무 build.gradle 파일에 아래 코드를 추가한 뒤 <code>./gradlew hello</code>로 실행할 수 있다.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode groovy"><code class="sourceCode groovy"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>tasks<span class="op">.</span><span class="fu">register</span><span class="op">(</span><span class="st">'hello'</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    doLast <span class="op">{</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>        println <span class="st">'Hello world!'</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>build.gradle을 자주 봐왔더라도 예시 코드가 어색할 수 있다.
+평소 프로젝트의 빌드 설정이 간단하면 직접 Task를 정의할 일이 없기 때문이다.
+Gradle의 Java 플러그인이 유용한 Task들을 미리 정의해주기 때문에 보통은
+이미 정의된 task를 수정만 하면 된다.</p>
+<h2 id="미리-정의되어있는-task들">미리 정의되어있는 Task들</h2>
+<p>Gradle의 BasePlugin에는 build, assemble, check
+등의 task들이 정의되어있다. 이들은 <a href="https://docs.gradle.org/current/userguide/more_about_tasks.html#sec:lifecycle_tasks">Lifecycle
+task</a>라고
+부른다. 우리가 <code>./gradlew build</code>를 호출하면 실행되는 task가 바로 이 build task다.</p>
+<p>build.gradle에 특별한 내용이 없어도 <code>./gradlew build</code>를 하면 build가 된다.
+어떤 과정을 통해서 build가 동작하는 걸까.</p>
+<p>일반적인 자바 프로젝트에서 사용하는 build.gradle파일을
+보면 다음 코드조각처럼 java 플러그인을 사용한다.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode gradle"><code class="sourceCode groovy"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>plugins <span class="op">{</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    id <span class="st">'java'</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>java 플러그인은 내부에서 BasePlugin을 로드한다.
+BasePlugin은 아무것도 못하는 build task를 정의한다.
+java 플러그인은 jar task를 정의한 뒤 build task가 jar task에 의존하게 만든다.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>
+<code>./gradlew build</code>를 실행하면 build가 의존하는 jar task가 실행된다.</p>
+<h2 id="task-덮어쓰기">Task 덮어쓰기</h2>
+<p>Task를 정의한 뒤 어디에서든 Task의 동작을 수정할 수 있다.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode groovy"><code class="sourceCode groovy"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>tasks<span class="op">.</span><span class="fu">register</span><span class="op">(</span><span class="st">'hello'</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    doLast <span class="op">{</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>        println <span class="st">'Hello last'</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>tasks<span class="op">.</span><span class="fu">named</span><span class="op">(</span><span class="st">'hello'</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    doFirst <span class="op">{</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>        println <span class="st">'Hello first'</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>위 코드처럼 hello 태스크를 정의한 다음에 언제든지 hello 태스크를 수정할 수 있다.
+더 간단하게는 아래 코드같은 문법을 사용할 수 있다.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode groovy"><code class="sourceCode groovy"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>hello <span class="op">{</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  doFirst <span class="op">{</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    println <span class="st">&quot;hello first 2&quot;</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<h2 id="정리">정리</h2>
+<p>이상으로 Gradle의 태스크에 대해 알아보았다. Task의 동작을
+이해하면 잘 모르고 사용하던 build, clean, test등의 명령어가
+어떻게 동작하는지에 대한 감을 얻을 수 있다. 다음
+글에서는 Gradle이 사용하는 Groovy의 특별한 문법에 대해
+이해한다.</p>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1"><p>사실 조금 다르다. BasePlugin이 build와 assemble을 정의한다.
+build 태스크는 assemble에 의존한다.
+java 플러그인이 jar를 정의하고 assemble이 jar에 의존하게 만든다.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+
+<script src="https://utteranc.es/client.js" repo="majecty/blog-comments" issue-term="pathname" theme="github-light" crossorigin="anonymous" async>
+</script>
+
+            </div>
+            <div id="footer">
+                Site proudly generated by
+                <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+            </div>
+        </div>
+        <script type="text/javascript" src="https://wcs.naver.net/wcslog.js"></script>
+        <script type="text/javascript">
+        if(!wcs_add) var wcs_add = {};
+        wcs_add["wa"] = "1204a977388eb38";
+        wcs_do();
+        </script>
+    </body>
+</html>

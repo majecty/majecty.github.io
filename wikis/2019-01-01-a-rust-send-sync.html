@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <meta property="og:type" content="website">
+        <meta property="og:title" content="주형 Blog - Rust Send와 Sync">
+        <meta property="og:image" content="https://blog.majecty.com/favicon_310.png">
+
+        <link rel="icon" type="image/png" href="../favicon_16.png" sizes="16x16">
+        <link rel="icon" type="image/png" href="../favicon_32.png" sizes="32x32">
+        <link rel="icon" type="image/png" href="../favicon_96.png" sizes="96x96">
+        <link rel="icon" type="image/png" href="../favicon_310.png" sizes="310x310">
+
+        <title>주형 Blog - Rust Send와 Sync</title>
+        <link rel="stylesheet" type="text/css" href="../css/default.css" />
+        <link rel="stylesheet" type="text/css" href="../css/syntax.css" />
+        <link rel="home" type="application/rss+xml" href="https://blog.majecty.com/atom.xml" />
+
+        <link href="//cdn.muicss.com/mui-0.9.41/css/mui.min.css" rel="stylesheet" type="text/css" />
+        <script src="//cdn.muicss.com/mui-0.9.41/js/mui.min.js"></script>
+
+        <link href="https://fonts.googleapis.com/css?family=Nanum+Gothic+Coding" rel="stylesheet"> 
+        <link href="https://fonts.googleapis.com/css?family=Nanum+Gothic" rel="stylesheet">
+        <script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-78778924-1', 'auto');
+ga('send', 'pageview');
+
+        </script>
+
+    </head>
+    <body class="mui-container">
+        <div style="margin:5px;">
+            <div id="header">
+                <div id="logo">
+                    
+                    <a href="../">주형 블로그</a>
+                    
+                </div>
+                <div id="navigation">
+                    
+                    <a href="../">Home</a>
+                    
+                    <a href="../contact.html">Contact</a>
+                    <a href="../wikis.html">Wiki</a>
+                </div>
+            </div>
+
+            <div id="content">
+                
+                <h1>Rust Send와 Sync</h1>
+                
+
+                <div class="info">
+    2019년 1월  1일에 씀
+</div>
+
+<div class="info">
+    
+    찾아보기: <a title="All pages tagged 'rust'." href="../wikiTags/rust.html" rel="tag">rust</a>, <a title="All pages tagged 'send'." href="../wikiTags/send.html" rel="tag">send</a>, <a title="All pages tagged 'sync'." href="../wikiTags/sync.html" rel="tag">sync</a>
+    
+</div>
+
+<br />
+
+<h1 id="tldr">tldr;</h1>
+<p>!Send는 Rc, !Sync는 Cell과 RefCell</p>
+<h1 id="멀티쓰레드">멀티쓰레드</h1>
+<p>멀티쓰레드에서 동시에 여러 쓰레드가 같은 메모리에 값을 쓰거나, 같은 메모라를 읽기와 쓰기가 동시에 일어나면 의도치 않는 값이 써지거나 이상한 값이 읽히는 문제가 생긴다. Rust는 Send와 Sync 트레잇을 사용하여 위의 상황들을 컴파일 타임에 체크하고 막는다.</p>
+<p>Send는 다른 쓰레드로 이동시킬 수 있는 값에 자동으로 태깅되며, Sync는 다른 쓰레드와 레퍼런스를 공유할 수 있는 값에 자동으로 태깅된다.</p>
+<p>Send와 Sync 트레잇은 자동으로 구현되는 Trait이다. 가지고 있는 값이 모드 Send인 struct는 자동으로 Send 트레잇이 구현되며, 가지고 있는 모든 값이 Sync인 struct는 자동으로 Sync를 구현한다.</p>
+<h2 id="send">Send</h2>
+<p>대부분의 타입은 소유권이 있는 쓰레드만이 쓰기가 가능하기 때문에 값을 이동시켜도 안전하다. 하지만 예외적으로 Rc타입은 레퍼런스들의 갯수를 세는 용도의 변수를 사용하기 때문에 다른 쓰레드로 이동시키면 안된다. 다른 쓰레드로 넘긴 Rc가 소멸될 때 다른 쓰레드의 변수를 수정하는 문제가 생길 수 있기 때문이다. 멀티쓰레드 환경에서 소유권을 공유하려면, 여러 쓰레드에서 접근하더라도 안전하게 변수를 수정하는 Arc 타입을 사용해야한다.</p>
+<h2 id="sync">Sync</h2>
+<p>대부분의 타입은 Borrow했을 때 읽기전용이기 때문에 여러 쓰레드에서 접근해도 문제가 없다. 하지만 Borrow했을 때도 값을 수정할 수 있도록 Interior Mutability를 지원하는 Cell과 RefCell타입은 여러쓰레드에서 공유했을 때 문제가 생긴다. 이 타입들은 값을 immutable하게 Borrow하더라도 내부의 값을 수정할 수 있기 때문에 여러 쓰레드에서 공유하면 동시에 값을 쓰는 문제가 발생할 수 있다. 여러 쓰레드에서도 안전한 Interior Mutability를 사용하려면 Mutex나 RwLock과 같은 락 타입을 사용해야한다.</p>
+<h3 id="sync를-sync로-만들기">!Sync를 Sync로 만들기</h3>
+<p>!Sync인 타입들은 여러 쓰레드에서 공유할 수 없는 타입이지만 필요한 경우 Mutex로 값을 감싸서 여러 쓰레드에서 값을 공유할 수 있다. !Sync인 타입들의 특징은 Interior Mutability 특성을 가지고 있어서 Borrow한 값으로도 수정이 가능한다는 점인데 Mutex로 감싸면 실행시점에 한 쓰레드만이 값에 접근하는 것이 보장되기 때문에 안전하게 값을 여러쓰레드에서 공유할 수 있다.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">impl</span><span class="op">&lt;</span>T<span class="op">:</span> <span class="op">?</span><span class="bu">Sized</span> <span class="op">+</span> <span class="bu">Send</span><span class="op">&gt;</span> <span class="bu">Sync</span> <span class="cf">for</span> Mutex<span class="op">&lt;</span>T<span class="op">&gt;</span></span></code></pre></div>
+<h2 id="쓰레드와-static">쓰레드와 ’static</h2>
+<p>Sync를 구현한 타입이라고 하더라도 대부분의 레퍼런스는 다른 쓰레드와 공유하는 것이 불가능하다. Thread끼리 Reference를 공유하려면 Reference의 lifetime이 모든 쓰레드의 생명주기보다 길어야하며 이 조건을 만족시키려면 ’static 레퍼런스밖에 없다. ’static 레퍼런스는 전역변수나 상수를 통해서만 만들 수 있다.</p>
+
+<script src="https://utteranc.es/client.js" repo="majecty/blog-comments" issue-term="pathname" theme="github-light" crossorigin="anonymous" async>
+</script>
+
+            </div>
+            <div id="footer">
+                Site proudly generated by
+                <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+            </div>
+        </div>
+        <script type="text/javascript" src="https://wcs.naver.net/wcslog.js"></script>
+        <script type="text/javascript">
+        if(!wcs_add) var wcs_add = {};
+        wcs_add["wa"] = "1204a977388eb38";
+        wcs_do();
+        </script>
+    </body>
+</html>

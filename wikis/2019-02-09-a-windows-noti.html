@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <meta property="og:type" content="website">
+        <meta property="og:title" content="주형 Blog - Electron과 Windows Notification">
+        <meta property="og:image" content="https://blog.majecty.com/favicon_310.png">
+
+        <link rel="icon" type="image/png" href="../favicon_16.png" sizes="16x16">
+        <link rel="icon" type="image/png" href="../favicon_32.png" sizes="32x32">
+        <link rel="icon" type="image/png" href="../favicon_96.png" sizes="96x96">
+        <link rel="icon" type="image/png" href="../favicon_310.png" sizes="310x310">
+
+        <title>주형 Blog - Electron과 Windows Notification</title>
+        <link rel="stylesheet" type="text/css" href="../css/default.css" />
+        <link rel="stylesheet" type="text/css" href="../css/syntax.css" />
+        <link rel="home" type="application/rss+xml" href="https://blog.majecty.com/atom.xml" />
+
+        <link href="//cdn.muicss.com/mui-0.9.41/css/mui.min.css" rel="stylesheet" type="text/css" />
+        <script src="//cdn.muicss.com/mui-0.9.41/js/mui.min.js"></script>
+
+        <link href="https://fonts.googleapis.com/css?family=Nanum+Gothic+Coding" rel="stylesheet"> 
+        <link href="https://fonts.googleapis.com/css?family=Nanum+Gothic" rel="stylesheet">
+        <script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-78778924-1', 'auto');
+ga('send', 'pageview');
+
+        </script>
+
+    </head>
+    <body class="mui-container">
+        <div style="margin:5px;">
+            <div id="header">
+                <div id="logo">
+                    
+                    <a href="../">주형 블로그</a>
+                    
+                </div>
+                <div id="navigation">
+                    
+                    <a href="../">Home</a>
+                    
+                    <a href="../contact.html">Contact</a>
+                    <a href="../wikis.html">Wiki</a>
+                </div>
+            </div>
+
+            <div id="content">
+                
+                <h1>Electron과 Windows Notification</h1>
+                
+
+                <div class="info">
+    2019년 2월  9일에 씀
+</div>
+
+<div class="info">
+    
+    찾아보기: <a title="All pages tagged 'electron'." href="../wikiTags/electron.html" rel="tag">electron</a>, <a title="All pages tagged 'windows'." href="../wikiTags/windows.html" rel="tag">windows</a>, <a title="All pages tagged 'notification'." href="../wikiTags/notification.html" rel="tag">notification</a>
+    
+</div>
+
+<br />
+
+<h2 id="tldr">tldr;</h2>
+<p>Electron에서 Windows Notification을 쓰고 싶으면, 빌드한 실행파일을 시작화면에 고정시킨 뒤 프로그램 초기화할 때 <code>app.setAppUserModelId(process.execPath)</code> 를 실행시켜주면 된다. 그 이후부터 Electron의 Notification API를 사용할 수 있다. 위 과정은 일반 사용자가 하기엔 번거로운 작업이므로, 프로덕션으로 배포할 땐 설치프로그램을 제작해야한다.</p>
+<h2 id="uwp와-notification">UWP와 Notification</h2>
+<p>UWP는 Universal Windows Platform의 약자로, UWP app은 Windwos 10이 동작하는 데스크탑, 엑스박스, 모일일 등에서 실행가능하며, MicroSoft Store에서 판매할 수 있다. 예전의 윈도우즈 개발환경에 모바일 마켓의 특징이 결합된 환경이다.</p>
+<p>Windows 10에서 브라우저나 메일 앱 등을 사용할 때 볼 수 있는 Notification은 이 UWP에서 제공해주는 기능이다. 따라서 UWP 환경에서 개발한 앱은 쉽게 Notification을 사용할 수 있으나, 예전 개환경인 Windows API나 WPF를 쓰는 경우 조금은 복잡한 설정과정을 쳐쳐서 Notification을 쓸 수 있다.</p>
+<h2 id="시작화면에-고정">시작화면에 고정</h2>
+<p>Windows의 Notification은 시작화면이나, All Programs에 바로가기가 등록된 앱들만이 Notification을 사용할 수 있다. 이 과정을 거치지 않았다면, Notification API를 호출하더라도 아무 일도 일어나지 않는다.</p>
+<h2 id="application-user-model-id-appusermodelid">Application User Model ID (AppUserModelId)</h2>
+<p>하나의 앱을 인식할 수 있게 하는 아이디이다. 같은 실행파일이더라도 유저가 보기에 서로 다른 어플리케이션처럼 동작한다면 다른 ID를 써야하며, 서로 다른 프로그램이더라도 유저에게는 한 어플리케이션처럼 보인다면 같은 ID를 써야한다. 이 ID는 All Programs나 시작화면에 등록한 바로가기에서 설정하거나, 실행중에 설정할 수 있다. 실행중에 설정한다면, Windows UI 코드를 실행하기 전에 등록해야한다. Electron에서 Notification을 띄우기 전에 AppUserModelId를 설정한다면 Notification이 잘 동작하지만, Notification을 한번이라도 먼저 호출한 뒤, AppUserModelId를 설정한다면, Notification이 동작하지 않는다.</p>
+<h2 id="개발중에-notification-테스트하기">개발중에 Notification 테스트하기</h2>
+<p>개발중이라면 Electron앱을 실행할 때 node_modules/electron/dist/electron.exe 파일이 실행된다. 이 파일을 탐색기에서 오른쪽 클릭한 뒤, 시작화면에 고정을 선택해야 한다.</p>
+<h2 id="참고자료">참고자료</h2>
+<ul>
+<li><a href="https://electronjs.org/docs/tutorial/notifications">Electron Notifaction 튜토리얼</a></li>
+<li><a href="https://docs.microsoft.com/ko-kr/windows/uwp/get-started/universal-application-platform-guide">UWP 가이드</a></li>
+<li><a href="https://docs.microsoft.com/ko-kr/windows/desktop/shell/enable-desktop-toast-with-appusermodelid">AppUserModelI로 Toast Notification 켜기</a></li>
+<li><a href="https://docs.microsoft.com/ko-kr/windows/desktop/shell/appids">Application User Model Ids</a></li>
+</ul>
+
+<script src="https://utteranc.es/client.js" repo="majecty/blog-comments" issue-term="pathname" theme="github-light" crossorigin="anonymous" async>
+</script>
+
+            </div>
+            <div id="footer">
+                Site proudly generated by
+                <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+            </div>
+        </div>
+        <script type="text/javascript" src="https://wcs.naver.net/wcslog.js"></script>
+        <script type="text/javascript">
+        if(!wcs_add) var wcs_add = {};
+        wcs_add["wa"] = "1204a977388eb38";
+        wcs_do();
+        </script>
+    </body>
+</html>

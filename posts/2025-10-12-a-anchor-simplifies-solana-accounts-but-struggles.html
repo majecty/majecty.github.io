@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <meta property="og:type" content="website">
+        <meta property="og:title" content="주형 Blog - Solana anchor에 대한 인상">
+        <meta property="og:image" content="https://blog.majecty.com/favicon_310.png">
+
+        <link rel="icon" type="image/png" href="../favicon_16.png" sizes="16x16">
+        <link rel="icon" type="image/png" href="../favicon_32.png" sizes="32x32">
+        <link rel="icon" type="image/png" href="../favicon_96.png" sizes="96x96">
+        <link rel="icon" type="image/png" href="../favicon_310.png" sizes="310x310">
+
+        <title>주형 Blog - Solana anchor에 대한 인상</title>
+        <link rel="stylesheet" type="text/css" href="../css/default.css" />
+        <link rel="stylesheet" type="text/css" href="../css/syntax.css" />
+        <link rel="home" type="application/rss+xml" href="https://blog.majecty.com/atom.xml" />
+
+        <link href="//cdn.muicss.com/mui-0.9.41/css/mui.min.css" rel="stylesheet" type="text/css" />
+        <script src="//cdn.muicss.com/mui-0.9.41/js/mui.min.js"></script>
+
+        <link href="https://fonts.googleapis.com/css?family=Nanum+Gothic+Coding" rel="stylesheet"> 
+        <link href="https://fonts.googleapis.com/css?family=Nanum+Gothic" rel="stylesheet">
+        <script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-78778924-1', 'auto');
+ga('send', 'pageview');
+
+        </script>
+
+    </head>
+    <body class="mui-container">
+        <div style="margin:5px;">
+            <div id="header">
+                <div id="logo">
+                    
+                    <a href="../">주형 블로그</a>
+                    
+                </div>
+                <div id="navigation">
+                    
+                    <a href="../">Home</a>
+                    
+                    <a href="../contact.html">Contact</a>
+                    <a href="../wikis.html">Wiki</a>
+                </div>
+            </div>
+
+            <div id="content">
+                
+                <h1>Solana anchor에 대한 인상</h1>
+                
+
+                <div class="info">
+    2025년 10월 12일에 씀
+</div>
+
+<div class="info">
+    
+    찾아보기: <a title="All pages tagged 'solana'." href="../tags/solana.html" rel="tag">solana</a>, <a title="All pages tagged 'anchor'." href="../tags/anchor.html" rel="tag">anchor</a>, <a title="All pages tagged 'blockchain'." href="../tags/blockchain.html" rel="tag">blockchain</a>
+    
+</div>
+
+<br />
+
+<p>solana 에서 program<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> 을 만들 때 <a href="https://www.anchor-lang.com/docs">anchor</a> 를 사용하면 직접 작성하기 까다로운 코드를 쉽게 작성할 수 있습니다. 최근 solana program을 직접 작성하면서 anchor 를 사용해본 경험을 정리했습니다.</p>
+<h3 id="solana의-account">solana의 account</h3>
+<p>solana 블록체인에 저장하는 모든 값은 account 라는 단위로 저장합니다. 모든 account 는 블록체인 지갑처럼 고유한 publickey 로 구분할 수 있습니다. 솔라나 프로그램의 코드도, 솔라나 프로그램이 저장하는 state도 각각의 account 에 저장해요. 블록체인에 값을 저장하는 건 비싸기 때문에 solana account 를 만들거나 크기를 키울 때 꽤 많은 sol을 예치금으로 담아두어야합니다.</p>
+<p>account 를 다루는 건 까다로운 지점이 많습니다. 저장하고 있는 값의 byte 수에 따라서 solana 를 예치해야하기 때문에 크기가 변하는 값을 저장하기가 어려워요. map 같은 걸 만드는 건 불가능에 가깝고, size가 바뀌는 array도 어렵습니다. solana가 내부적으로 byte array로만 값을 저장해주기 때문에 프로그래머가 알아서 값들을 직렬화/역질렬화를 해야합니다. account 관련 보안 문제가 될 지점도 많아서 조심히 써야합니다. 모든 account 는 solana program 외부에서 전달되어 들어옵니다. 악의적으로 엉뚱한 account를 인자로 주었을 때 검증을 안하면 자산을 탈취당하기 쉽습니다.</p>
+<p>이렇게 다루기 귀찮은 account 방식을 쓰는 이유는 transaction을 병렬적으로 실행하기 위해서에요. 여러 트랜잭션이 서로 다른 account 를 읽거나 쓰는 경우는 안전하게 병렬적으로 실행할 수 있어요. solana의 transaction은 자신이 읽거나 쓰는 모든 account를 미리 명시하고 있기 때문에 transaction을 실행하기 전에 병렬적으로 호출할 transaction들을 미리 파악할 수 있습니다. 다른 스마트컨트랙트 언어인 move 언어나 telegram의 ton 블록체인 역시 병렬 실행을 위해 비슷한 구조를 사용해요.</p>
+<h3 id="불편한-account-를-anchor로-쉽게-다루기">불편한 account 를 anchor로 쉽게 다루기</h3>
+<p>anchor를 사용하면 직렬화/역직렬화 코드와 보안을 위한 account 검증 코드를 쉽게 작성할 수 있어요. anchor 가 제공해주는 매크로를 사용하면 solana struct 로 정의한 account 의 직렬화/역직렬화 코드가 자동으로 생성됩니다. anchor 의 규칙에 맞게 함수를 정의하면 사용하기 쉽게 solana struct 를 인자로 받아올 수 있어요.</p>
+<p>아래 코드는 solana spl token program의 일부분이에요<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>. transfer instruction을 처리하는 코드의 앞부분과 끝부분입니다. account 목록이 <code>accounts</code> 인자로 들어오면 이걸 하나씩 꺼낸 뒤 <code>Account::unpack</code> 이라는 함수로 역직렬화를 하는 걸 볼 수 있어요. 모든 로직이 끝나면 다시 Account::pack 함수를 호출해서 byte array로 직렬화하고 있습니다.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">/// transfer 코드 앞부분</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="kw">pub</span> <span class="kw">fn</span> process_transfer(</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>	program_id<span class="op">:</span> <span class="op">&amp;</span>Pubkey<span class="op">,</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>	accounts<span class="op">:</span> <span class="op">&amp;</span>[AccountInfo]<span class="op">,</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>	amount<span class="op">:</span> <span class="dt">u64</span><span class="op">,</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>	expected_decimals<span class="op">:</span> <span class="dt">Option</span><span class="op">&lt;</span><span class="dt">u8</span><span class="op">&gt;,</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> ProgramResult <span class="op">{</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>	<span class="kw">let</span> account_info_iter <span class="op">=</span> <span class="op">&amp;</span><span class="kw">mut</span> accounts<span class="op">.</span>iter()<span class="op">;</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>	<span class="co">// account_iter로부터 account를 하나씩 꺼내옵니다.</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>	<span class="kw">let</span> source_account_info <span class="op">=</span> next_account_info(account_info_iter)<span class="op">?;</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>	<span class="op">....</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>	<span class="kw">let</span> destination_account_info <span class="op">=</span> next_account_info(account_info_iter)<span class="op">?;</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>	<span class="op">...</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>	<span class="co">// 꺼낸 account_info를 unpack해서 읽고 쓰기 쉬운 struct 타입으로 변환합니다.</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>	<span class="kw">let</span> <span class="kw">mut</span> source_account <span class="op">=</span> <span class="pp">Account::</span>unpack(<span class="op">&amp;</span>source_account_info<span class="op">.</span>data<span class="op">.</span>borrow())<span class="op">?;</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>	<span class="kw">let</span> <span class="kw">mut</span> destination_account <span class="op">=</span> <span class="pp">Account::</span>unpack(<span class="op">&amp;</span>destination_account_info<span class="op">.</span>data<span class="op">.</span>borrow())<span class="op">?;</span></span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>	<span class="co">// transfer 코드 뒷부분</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>	</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>	<span class="pp">Account::</span>pack(source_account<span class="op">,</span> <span class="op">&amp;</span><span class="kw">mut</span> source_account_info<span class="op">.</span>data<span class="op">.</span>borrow_mut())<span class="op">?;</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>	<span class="pp">Account::</span>pack(</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>		destination_account<span class="op">,</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>		<span class="op">&amp;</span><span class="kw">mut</span> destination_account_info<span class="op">.</span>data<span class="op">.</span>borrow_mut()<span class="op">,</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>	)<span class="op">?;</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>	<span class="cn">Ok</span>(())</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>아래 코드는 anchor 를 사용한 코드입니다. account 를 pack / unpack하는 과정을 anchor 가 자동으로 해주기 때문에 account 를 사용하는 코드가 무척 간결해집니다. 그 이외에도 mutable 설정에 대한 검증이나, account 의 ownership<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a> 에 대한 검증들도 자동으로 처리해줍니다.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a> </span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="at">#[</span>derive<span class="at">(</span>Accounts<span class="at">)]</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="kw">pub</span> <span class="kw">struct</span> TransferAccounts<span class="op">&lt;</span><span class="ot">'info</span><span class="op">&gt;</span> <span class="op">{</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">#[</span>account<span class="at">(</span><span class="kw">mut</span><span class="at">)]</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">pub</span> source<span class="op">:</span> Account<span class="op">&lt;</span><span class="ot">'info</span><span class="op">,</span> TokenAccount<span class="op">&gt;,</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">#[</span>account<span class="at">(</span><span class="kw">mut</span><span class="at">)]</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">pub</span> destination<span class="op">:</span> Account<span class="op">&lt;</span><span class="ot">'info</span><span class="op">,</span> TokenAccount<span class="op">&gt;,</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    <span class="op">...</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="kw">pub</span> <span class="kw">fn</span> process_transfer(</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>	ctx<span class="op">:</span> Context<span class="op">&lt;</span>TransferAccounts<span class="op">&gt;,</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>	amount<span class="op">:</span> <span class="dt">u64</span><span class="op">,</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>	expected_decimals<span class="op">:</span> <span class="dt">Option</span><span class="op">&lt;</span><span class="dt">u8</span><span class="op">&gt;,</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> ProgramResult <span class="op">{</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>	<span class="kw">let</span> <span class="kw">mut</span> source_account <span class="op">=</span> <span class="op">&amp;</span>ctx<span class="op">.</span>accounts<span class="op">.</span>source<span class="op">;</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>	<span class="kw">let</span> <span class="kw">mut</span> destination_account <span class="op">=</span> <span class="op">&amp;</span>ctx<span class="op">.</span>accounts<span class="op">.</span>destination<span class="op">;</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>    <span class="co">// pack을 명시적으로 하지 않아도 anchor 가 알아서 처리해줍니다.</span></span></code></pre></div>
+<h3 id="anchor-의-아쉬운-점들">Anchor 의 아쉬운 점들</h3>
+<p>anchor 는 편리했지만 조금만 사용해도 불편함을 크게 느낄 수 있어요. 가장 먼저 어려웠던 점은 암묵적인 규칙들에 대한 에러메시지가 매우 불친절하다는 점입니다. anchor 의 문서에서 가장 중요한 부분은 <a href="https://www.anchor-lang.com/docs/references/account-types">Account Types</a> 와 <a href="https://www.anchor-lang.com/docs/references/account-constraints">Account Constraints</a> 파트입니다. 다양한 account type 과 account 의 constraint 를 골라서 사용해야합니다. 예를 들어서 아래처럼 token::mint 에 target_account 를 넣어야할 때 어떤 값을 어떻게 넣어야하는지에 대해서 알려주지 않아요. target_account에 상수를 넣을 수 있는지, 같은 accounts 안의 다른 field를 넣을 수 있는지, 다른 account의 안의 data에 적혀있는 account address 를 써도 되는지 알 수 없어요. 어떤게 될지 몰라서 임의의 값을 넣어보더라도 에러메시지가 매우 불친절해서 어떻게 고쳐야하는지 알기 어렵습니다. 몇 번 시도하다 보면 결국 example 에 작성된 코드에서 조금이라도 벗어나는 코드를 쓰기 어려워져요.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="at">#[</span>account<span class="at">(</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    <span class="pp">token::</span>mint <span class="op">=</span> <span class="op">&lt;</span>target_account<span class="op">&gt;,</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="pp">token::</span>authority <span class="op">=</span> <span class="op">&lt;</span>target_account<span class="op">&gt;</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="at">)]</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a> </span></code></pre></div>
+<p>또 다른 예시로 optional account 가 있습니다. 아래 코드처럼 optional 하게 account 를 받아올 수 있어요. 문제는 이 accounts를 typescript 에서 생성해야할 때 문제가 발생했어요. solana 는 <a href="https://www.npmjs.com/package/@solana/web3.js">web3.js library</a> 에서 <a href="https://github.com/anza-xyz/kit">solana kit library</a> 로 이전하고 있어요. anchor 가 만들어주는 typescript library 는 web3.js 에 의존하고 있어서 제가 작업하는 프로젝트에서 쓸 수 없었습니다. 따라서 이 optional 한 필드에 값을 빼고 싶을 때 어떠한 처리를 해야하는지 제가 직접 확인하고 작업을 해야했어요. 하지만 anchor 쪽에서는 optional한 field를 어떻게 처리하는지 문서가 없어요. 그리고 solana에서는 account 목록을 transaction에 담을 때 optional한 인자를 처리하는 방법을 제공해주지 않아요. anchor가 임의의 규칙을 만들어서 optional 처리를 하고 있던 거에요. 결국 optional 을 어떻게 처리하는지는 anchor 내부 코드를 읽고 나서야 이해할 수 있었습니다.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="at">#[</span>derive<span class="at">(</span>Accounts<span class="at">)]</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="kw">pub</span> <span class="kw">struct</span> InstructionAccounts<span class="op">&lt;</span><span class="ot">'info</span><span class="op">&gt;</span> <span class="op">{</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">pub</span> account<span class="op">:</span> <span class="dt">Option</span><span class="op">&lt;</span>Account<span class="op">&lt;</span><span class="ot">'info</span><span class="op">,</span> AccountType<span class="op">&gt;&gt;,</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>아래가 anchor 내부에서 optional한 타입을 처리하는 코드입니다. account 의 key가 pogram의 id를 넣어주면 None 으로 처리해주는 거였어요. 이 <a href="https://github.com/solana-foundation/anchor/blob/1ebbe58158d089a2a40b5e35ebead5a10db9090d/lang/src/accounts/option.rs#L46">링크</a>에서 코드를 직접 보실 수 있습니다.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode rust"><code class="sourceCode rust"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> accounts[<span class="dv">0</span>]<span class="op">.</span>key <span class="op">==</span> program_id <span class="op">{</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>	<span class="op">*</span>accounts <span class="op">=</span> <span class="op">&amp;</span>accounts[<span class="dv">1</span><span class="op">..</span>]<span class="op">;</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>	<span class="cn">Ok</span>(<span class="cn">None</span>)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="op">}</span> <span class="cf">else</span> <span class="op">{</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>	<span class="co">// If the program_id doesn't equal the account key, we default to</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>	<span class="co">// the try_accounts implementation for the inner type and then wrap that with</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>	<span class="co">// Some. This should handle all possible valid cases.</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>	<span class="pp">T::</span>try_accounts(program_id<span class="op">,</span> accounts<span class="op">,</span> ix_data<span class="op">,</span> bumps<span class="op">,</span> reallocs)<span class="op">.</span>map(<span class="cn">Some</span>)</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<h3 id="anchor-를-어떻게-다루어야할까">Anchor 를 어떻게 다루어야할까</h3>
+<p>내가 작성하는 solana program이 anchor 에서 제공해주는 예시를 따라하는 것 만으로도 요구사항이 만족되면 딱히 문제가 없습니다. 하지만 그 이외의 작업을 해야한다면 결국 anchor 의 소스코드를 읽어야하고, <code>anchor expand</code> 를 사용해서 anchor 가 생성하는 소스코드를 확인해야합니다. (anchor expand 명령어로 anchor가 생성하는 코드를 출력해볼 수 있어요.) 안전한 program을 작성하는 데 큰 도움을 주는 라이브러리이긴 해요. 어떠한 라이브러리들은 디테일을 잘 감싸주어서 사용자들이 디테일을 잘 모르는 상태로 써도 됩니다. anchor는 반대로 사용하는 사람들이 anchor가 해주는 데테일이 무엇인지 전부 파악한 상태로 사용해야하는 라이브러리입니다.</p>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1"><p>solana blockchain의 smart contract 를 program이라고 부릅니다. 코드와 state 가 solana blockchain에 저장됩니다. solana program의 결과는 다시 state 에 적혀서 solana 를 사용하는 모든 사람이 확인할 수 있습니다.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>https://github.com/solana-program/token/blob/369b0818ee958e52e9110bcf0842ecceabd7c28c/program/src/processor.rs#L227 에서 원문 코드를 확인할 수 있습니다.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>모든 accounet는 owner account 를 지정합니다. 이 owner account 에 담긴 program만이 account 에 적힌 data 값을 수정할 수 있어요.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+
+<script src="https://utteranc.es/client.js" repo="majecty/blog-comments" issue-term="pathname" theme="github-light" crossorigin="anonymous" async>
+</script>
+
+            </div>
+            <div id="footer">
+                Site proudly generated by
+                <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+            </div>
+        </div>
+        <script type="text/javascript" src="https://wcs.naver.net/wcslog.js"></script>
+        <script type="text/javascript">
+        if(!wcs_add) var wcs_add = {};
+        wcs_add["wa"] = "1204a977388eb38";
+        wcs_do();
+        </script>
+    </body>
+</html>

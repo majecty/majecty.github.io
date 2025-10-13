@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <meta property="og:type" content="website">
+        <meta property="og:title" content="주형 Blog - 유니티 UI에서 버튼 선택가능 영역 설정하기">
+        <meta property="og:image" content="https://blog.majecty.com/favicon_310.png">
+
+        <link rel="icon" type="image/png" href="../favicon_16.png" sizes="16x16">
+        <link rel="icon" type="image/png" href="../favicon_32.png" sizes="32x32">
+        <link rel="icon" type="image/png" href="../favicon_96.png" sizes="96x96">
+        <link rel="icon" type="image/png" href="../favicon_310.png" sizes="310x310">
+
+        <title>주형 Blog - 유니티 UI에서 버튼 선택가능 영역 설정하기</title>
+        <link rel="stylesheet" type="text/css" href="../css/default.css" />
+        <link rel="stylesheet" type="text/css" href="../css/syntax.css" />
+        <link rel="home" type="application/rss+xml" href="https://blog.majecty.com/atom.xml" />
+
+        <link href="//cdn.muicss.com/mui-0.9.41/css/mui.min.css" rel="stylesheet" type="text/css" />
+        <script src="//cdn.muicss.com/mui-0.9.41/js/mui.min.js"></script>
+
+        <link href="https://fonts.googleapis.com/css?family=Nanum+Gothic+Coding" rel="stylesheet"> 
+        <link href="https://fonts.googleapis.com/css?family=Nanum+Gothic" rel="stylesheet">
+        <script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-78778924-1', 'auto');
+ga('send', 'pageview');
+
+        </script>
+
+    </head>
+    <body class="mui-container">
+        <div style="margin:5px;">
+            <div id="header">
+                <div id="logo">
+                    
+                    <a href="../">주형 블로그</a>
+                    
+                </div>
+                <div id="navigation">
+                    
+                    <a href="../">Home</a>
+                    
+                    <a href="../contact.html">Contact</a>
+                    <a href="../wikis.html">Wiki</a>
+                </div>
+            </div>
+
+            <div id="content">
+                
+                <h1>유니티 UI에서 버튼 선택가능 영역 설정하기</h1>
+                
+
+                <div class="info">
+    2016년 7월  9일에 씀
+</div>
+
+<div class="info">
+    
+    찾아보기: <a title="All pages tagged 'unity'." href="../tags/unity.html" rel="tag">unity</a>, <a title="All pages tagged '삽질'." href="../tags/%EC%82%BD%EC%A7%88.html" rel="tag">삽질</a>
+    
+</div>
+
+<br />
+
+<h1 id="깨진-유니티의-ui-추상화">깨진 유니티의 UI 추상화</h1>
+<p>유니티에서 UI는 Visual Component와 Interaction Component들로 나뉩니다. Visual component는 Image나 Text등 눈에 보이는 것을 만들어내는 컴포넌트들입니다. Interaction Component는 Button과 Scrollbar, Toggle 등 유저의 인터렉션을 처리하는 컴포넌트들입니다. Interaction Component는 홀로는 쓰일 수 없고 항상 무언가를 보여주는 Visual component와 함께만 사용가능합니다.</p>
+<p>대부분의 경우 문제없이 동작하지만 요구사항이 디테일해지면 문제가 생길 수 있습니다. 버튼은 특정 영역을 누르면 반응이 나옵니다. 여기서 눌렸는 지 체크하는 영역은 그 버튼의 VisualComponent의 RectTransform에 의존합니다. 다시 말해서 VisualComponent들을 통해서만 버튼의 클릭 영역을 설정할 수 있습니다.</p>
+<p>반짝반짝 하는 이펙트가 함께 달린 버튼 이미지를 사용한다면 반짝반짝 하는 이펙트 부분까지 전부 클릭 가능한 영역이 됩니다. 직관적인 방법을 통해선 보이는 영역보다 작게 클릭 가능한 영역을 설정할 수 없습니다. 그리고 모든 이미지는 사각형이기 때문에 사각형 이외의 클릭 영역을 만들 수 없습니다. 원 모양의 클릭 영역을 만들어낼 수 없습니다.</p>
+<p>개념을 단순하게 하기 위해서 보이는 영역과 인터렉션 가능한 영역을 합쳐버린 게 문제인거죠. 따라서 보이는 것과 인터렉션 가능한 영역이 다를 때를 처리하지 못합니다.</p>
+<h1 id="우회해서-해결하기">우회해서 해결하기</h1>
+<p>조금 귀찮은 작업을 하면 보이는 것보다 작은 인터렉션 영역을 만들 수 있습니다. 저는 다음과 같은 구조를 만들어서 우회했습니다. 버튼이 있는 게임오브젝트, 화면에 보이는 Image를 가지는 게임오브젝트, 클릭할 영역을 가지는 게임오브젝트로 3개를 분리했습니다.</p>
+<pre><code>buttonGameObject(Button component)
+  - imageGameObject(Image component without Raycast Target)
+  - clickableGameObject(Image component with transparent image)</code></pre>
+<p>buttonGameObject는 버튼을 나타내는 상위 게임 오브젝트입니다. 이 게임 오브젝트는 버튼 컴포넌트를 가지고 있습니다.</p>
+<p>그 자식으로 image게임 오브젝트를 만듭니다. 이 게임 오브젝트는 Image 컴포넌트를 가지고 화면에 보이는 이미지를 세팅합니다. 그리고 버튼의 선택가능한 영역에 속하지 않도록 raycastTarget 을 끕니다.</p>
+<p>다음으로 clickableGameObject를 buttonGameObject의 자식으로 만듭니다. 이 gameObject도 Image컴포넌트를 가집니다. 이 게임 오브젝트는 클릭가능한 영역을 위해서 만든 것이므로 source
+image를 비워두고 Color에서 alpha를 조절해서 투명하게 만듭니다. 클릭이 가능해야하므로 raycastTarget옵션을 키고, rectTransform을 조절해서 원하는 만큼만 클릭이 가능하게 만듭니다.</p>
+<p>투명한 이미지를 사용하여 클릭가능한 영역을 설정한다는 방식이 좋아보이진 않지만 이 방법을 사용하면 보이는 것보다 더 작은 영역에서 클릭이 가능하게 만들 수 있습니다.</p>
+
+<script src="https://utteranc.es/client.js" repo="majecty/blog-comments" issue-term="pathname" theme="github-light" crossorigin="anonymous" async>
+</script>
+
+            </div>
+            <div id="footer">
+                Site proudly generated by
+                <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+            </div>
+        </div>
+        <script type="text/javascript" src="https://wcs.naver.net/wcslog.js"></script>
+        <script type="text/javascript">
+        if(!wcs_add) var wcs_add = {};
+        wcs_add["wa"] = "1204a977388eb38";
+        wcs_do();
+        </script>
+    </body>
+</html>

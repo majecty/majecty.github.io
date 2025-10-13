@@ -1,0 +1,474 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <meta property="og:type" content="website">
+        <meta property="og:title" content="주형 Blog - Gnome Tweak이 하는 일 추적하기">
+        <meta property="og:image" content="https://blog.majecty.com/favicon_310.png">
+
+        <link rel="icon" type="image/png" href="../favicon_16.png" sizes="16x16">
+        <link rel="icon" type="image/png" href="../favicon_32.png" sizes="32x32">
+        <link rel="icon" type="image/png" href="../favicon_96.png" sizes="96x96">
+        <link rel="icon" type="image/png" href="../favicon_310.png" sizes="310x310">
+
+        <title>주형 Blog - Gnome Tweak이 하는 일 추적하기</title>
+        <link rel="stylesheet" type="text/css" href="../css/default.css" />
+        <link rel="stylesheet" type="text/css" href="../css/syntax.css" />
+        <link rel="home" type="application/rss+xml" href="https://blog.majecty.com/atom.xml" />
+
+        <link href="//cdn.muicss.com/mui-0.9.41/css/mui.min.css" rel="stylesheet" type="text/css" />
+        <script src="//cdn.muicss.com/mui-0.9.41/js/mui.min.js"></script>
+
+        <link href="https://fonts.googleapis.com/css?family=Nanum+Gothic+Coding" rel="stylesheet"> 
+        <link href="https://fonts.googleapis.com/css?family=Nanum+Gothic" rel="stylesheet">
+        <script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-78778924-1', 'auto');
+ga('send', 'pageview');
+
+        </script>
+
+    </head>
+    <body class="mui-container">
+        <div style="margin:5px;">
+            <div id="header">
+                <div id="logo">
+                    
+                    <a href="../">주형 블로그</a>
+                    
+                </div>
+                <div id="navigation">
+                    
+                    <a href="../">Home</a>
+                    
+                    <a href="../contact.html">Contact</a>
+                    <a href="../wikis.html">Wiki</a>
+                </div>
+            </div>
+
+            <div id="content">
+                
+                <h1>Gnome Tweak이 하는 일 추적하기</h1>
+                
+
+                <div class="info">
+    2020년 4월 26일에 씀
+</div>
+
+<div class="info">
+    
+    찾아보기: <a title="All pages tagged 'gnome'." href="../tags/gnome.html" rel="tag">gnome</a>, <a title="All pages tagged 'python'." href="../tags/python.html" rel="tag">python</a>
+    
+</div>
+
+<br />
+
+<h2 id="목적">목적</h2>
+<p>gnome-tweaks에서 “Additional Layout Options” 버튼을 누르면 나오는 창에서 설정한 키보드 옵션이 어떻게 적용되는지 분석하자.</p>
+<h2 id="gnome-tweaks">Gnome Tweaks</h2>
+<p>Gnome Tweaks는 Gnome 3의 고급 기능을 설정하는 GUI도구다.
+OS의 설정 앱에서는 제공하지 않는 숨겨진 기능들을 설정할 수 있다.
+키보드 옵션 중에는 CapsLock키의 동작을 Ctrl로 바꾼다거나 오른쪽 알트 키를 한영키로 동작시키는 옵션을 제공한다.
+Keyboard &amp; Mouse 탭에서 키보드와 마우스에 대한 옵션들을 설정할 수 있으며, 그 중 “Additional Layout Options” 버튼을 클릭하면 키보드의 조합키들에 관한 다양한 옵션을 바꿀 수 있다.</p>
+<p>Gnome Tweaks의 소스코드는 Gitlab<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>에서 받을 수 있다.
+프로젝트의 루트 디렉토리에는 README.md파일과 빌드 관련 파일들이 있다.
+소스코드는 gtweak 디렉토리 안에 있는데, tweaks 디렉토리에는 UI에 대응되는 코드들이 있다.
+tweak_group_font.py는 폰트 설정창을 담당하는 코드고, tweak_group_keymouse.py파일이 키보드 마우스 설정창을 담당한다.</p>
+<h2 id="additionallayoutbutton">AdditionalLayoutButton</h2>
+<p>gtweak/tweaks/tweak_group_keymouse.py<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> 파일을 열면 <code>AdditionalLayoutButton</code><a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a> class를 찾을 수 있다.
+<code>AdditionalLayoutButton</code> class는 “Additional Layout Button”의 모양을 결정하고, 버튼이 클릭되었을 때의 동작을 명시한다.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Gtk.Box를 상속한다. Gtk는 UI를 커스터마이징하기 위해서 상속을 사용한다.</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> AdditionalLayoutButton(Gtk.Box, Tweak):</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>):</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>        Gtk.Box.<span class="fu">__init__</span>(<span class="va">self</span>, orientation<span class="op">=</span>Gtk.Orientation.VERTICAL, spacing<span class="op">=</span><span class="dv">18</span>,</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>                               valign<span class="op">=</span>Gtk.Align.CENTER)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>        Tweak.<span class="fu">__init__</span>(<span class="va">self</span>, <span class="st">&quot;extensions&quot;</span>, <span class="st">&quot;&quot;</span>)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>        <span class="co"># 버튼을 만든다.</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>        btn <span class="op">=</span> Gtk.Button(label<span class="op">=</span>_(<span class="st">&quot;Additional Layout Options&quot;</span>),halign<span class="op">=</span>Gtk.Align.END)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>        <span class="co"># 버튼이 눌렸을 때 이벤트를 등록한다.</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>        btn.<span class="ex">connect</span>(<span class="st">&quot;clicked&quot;</span>, <span class="va">self</span>._on_browse_clicked)</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Box안에 버튼을 넣는다.</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.add(btn)</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.show_all()</span></code></pre></div>
+<p>이 버튼은 클릭<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a>했을 dialog를 만들고<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a>, 그 안에 <code>ScrolledWindow</code>를 만들고<a href="#fn6" class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a>, 다시 그 안에 <code>TypingTweakGroup</code><a href="#fn7" class="footnote-ref" id="fnref7" role="doc-noteref"><sup>7</sup></a>을 만든다.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> _on_browse_clicked(<span class="va">self</span>, btn):</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="co"># dialog를 만든다.</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    dialog <span class="op">=</span> Gtk.Window()</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    dialog.set_title(_(<span class="st">&quot;Additional Layout Options&quot;</span>))</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    dialog.set_type_hint(Gdk.WindowTypeHint.DIALOG)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    dialog.set_transient_for(<span class="va">self</span>.main_window)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    dialog.set_modal(<span class="va">True</span>)</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    dialog.set_size_request(<span class="dv">500</span>,<span class="dv">500</span>)</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    geometry <span class="op">=</span> Gdk.Geometry()</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    geometry.max_height <span class="op">=</span> <span class="dv">500</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    dialog.set_geometry_hints(<span class="va">None</span>, geometry, Gdk.WindowHints.MAX_SIZE)</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>    <span class="co"># ScrolledWindow를 만든다.</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>    scrolled_window <span class="op">=</span> Gtk.ScrolledWindow()</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>    scrolled_window.set_border_width(<span class="dv">10</span>)</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>    <span class="co"># ScrolledWindow안에 TypingTweakGroup을 만든다.</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>    box <span class="op">=</span> TypingTweakGroup()</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>    scrolled_window.add_with_viewport(box)</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>    dialog.add(scrolled_window)</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>    dialog.show_all()</span></code></pre></div>
+<h2 id="typingtweakgroup">TypingTweakGroup</h2>
+<p>Additional Layout Options을 눌렀을 때 뜨는 창에는 옵션의 그룹들이 들어 있으며, 그룹을 열면 그룹 안에 체크박스 혹은 라디오 박스 여럿으로 구성되어 있다.
+예를 들어 “캡스락 키의 동작” 그룹을 열면 “끄기”, “Ctrl로 사용”, “Alt로 사용” 등의 옵션들이 표시된다.</p>
+<p>gtweak/tweaks/tweak_group_xkb.py<a href="#fn8" class="footnote-ref" id="fnref8" role="doc-noteref"><sup>8</sup></a> 파일을 열면 <code>TypingTweakGroup</code><a href="#fn9" class="footnote-ref" id="fnref9" role="doc-noteref"><sup>9</sup></a> 클래스가 정의되어 있다.
+이 클래스는 <code>GnomeDesktop.XKBInfo.get_all_options_groups</code>함수를 호출해<a href="#fn10" class="footnote-ref" id="fnref10" role="doc-noteref"><sup>10</sup></a> 옵션들을 읽고 각 옵션마다 _XkbOption UI를 만들어 <code>self.pack_start(option, ...)</code>을 호출해 화면에 옵션을 표시한다.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> TypingTweakGroup(Gtk.Box):</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># ...</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>):</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>        Gtk.Box.<span class="fu">__init__</span>(<span class="va">self</span>, orientation<span class="op">=</span>Gtk.Orientation.VERTICAL, spacing<span class="op">=</span><span class="dv">3</span>)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>._option_objects <span class="op">=</span> []</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>        ok <span class="op">=</span> <span class="va">False</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>        <span class="cf">try</span>:</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>            <span class="co"># ...</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>        <span class="cf">except</span> GSettingsMissingError:</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>            <span class="co"># ...</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>        <span class="cf">except</span> <span class="pp">AttributeError</span>:</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>            <span class="co"># ...</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>        <span class="cf">finally</span>:</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> ok:</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>                <span class="co"># 모든 옵션을 돌면서</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>                <span class="cf">for</span> opt <span class="kw">in</span> <span class="bu">set</span>(<span class="va">self</span>._xkb_info.get_all_option_groups()) <span class="op">-</span> <span class="va">self</span>.XKB_OPTIONS_BLACKLIST:</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>                    <span class="co"># _XkbOption 인스턴스를 만들고,</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>                    obj <span class="op">=</span> _XkbOption(opt, <span class="va">self</span>._kbdsettings, <span class="va">self</span>._xkb_info)</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>                    <span class="va">self</span>._option_objects.append(obj)</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>                    <span class="co"># 인스턴스를 self(box)에 넣는다.</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>                    <span class="va">self</span>.pack_start(obj, <span class="va">False</span>, <span class="va">False</span>, <span class="dv">0</span>)</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>        <span class="co"># ...</span></span></code></pre></div>
+<h2 id="xkboption">_XkbOption</h2>
+<p><code>_XkbOption</code> class<a href="#fn11" class="footnote-ref" id="fnref11" role="doc-noteref"><sup>11</sup></a>는 <code>TypingTweakGroup</code>과 같은 파일에 선언되어있다.
+<code>_XkbOption</code>은 GTK의 <code>Expander</code> 클래스를 상속하고 있으며, 각 옵션 그룹 안의 옵션값 읽어온 다음<a href="#fn12" class="footnote-ref" id="fnref12" role="doc-noteref"><sup>12</sup></a> 옵션별로 체크버튼<a href="#fn13" class="footnote-ref" id="fnref13" role="doc-noteref"><sup>13</sup></a>이나 라디오 버튼<a href="#fn14" class="footnote-ref" id="fnref14" role="doc-noteref"><sup>14</sup></a>을 만든다.
+각 옵션은 토글되었을 때 <code>_XkbOption</code>의 <code>_on_toggled</code> 함수를 호출한다<a href="#fn15" class="footnote-ref" id="fnref15" role="doc-noteref"><sup>15</sup></a>.
+_on_toggled 함수<a href="#fn16" class="footnote-ref" id="fnref16" role="doc-noteref"><sup>16</sup></a>는 상태에 따라서 <code>self._parent_settings</code>의 <code>setting_remove_from_list</code>, <code>setting_add_to_list</code> 중 하나를 호출한다.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Gtk.Expander를 상속한다.</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> _XkbOption(Gtk.Expander, Tweak):</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, group_id, parent_settings, xkb_info, <span class="op">**</span>options):</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>        <span class="co"># ...</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>        Gtk.Expander.<span class="fu">__init__</span>(<span class="va">self</span>)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>        Tweak.<span class="fu">__init__</span>(<span class="va">self</span>, desc, desc, <span class="op">**</span>options)</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.set_label(<span class="va">self</span>.name)</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>        vbox <span class="op">=</span> Gtk.Box(orientation<span class="op">=</span>Gtk.Orientation.VERTICAL, spacing<span class="op">=</span><span class="dv">3</span>)</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>        vbox.set_margin_start(<span class="dv">15</span>)</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.add(vbox)</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>        <span class="co"># ...</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>        model_values <span class="op">=</span> []</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>        <span class="co"># ...</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>        <span class="co"># group에 있는 모든 옵션을 돌면서</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> option_id <span class="kw">in</span> <span class="va">self</span>._xkb_info.get_options_for_group(group_id):</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>            desc <span class="op">=</span> <span class="va">self</span>._xkb_info.description_for_option(group_id, option_id)</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>            <span class="co"># model_values 변수를 채운다.</span></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>            model_values.append((option_id, desc))</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>._possible_values.append(option_id)</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>        <span class="co"># ...</span></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>        model_values.sort(key<span class="op">=</span>values_cmp_py3_wrap(values_cmp))</span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>._widgets <span class="op">=</span> <span class="bu">dict</span>()</span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> (val, name) <span class="kw">in</span> model_values:</span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>            w <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>            <span class="co"># 옵션의 특징에 따라서</span></span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> <span class="va">self</span>._multiple_selection:</span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>                <span class="co"># 체크박스를 만들거나</span></span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>                w <span class="op">=</span> Gtk.CheckButton.new()</span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>            <span class="cf">else</span>:</span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a>                <span class="co"># 라디오버튼을 만든다.</span></span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>                w <span class="op">=</span> Gtk.RadioButton.new_from_widget(<span class="va">self</span>._widgets.get(<span class="va">None</span>))</span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>._widgets[val] <span class="op">=</span> w<span class="op">;</span></span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>            vbox.add(w)</span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a>            l <span class="op">=</span> Gtk.Label(label<span class="op">=</span>name)</span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a>            l.set_line_wrap(<span class="va">True</span>)</span>
+<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a>            w.add(l)</span>
+<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a>            <span class="co"># 옵션이 수정되었을 때 self._on_toggled가 호출된다.</span></span>
+<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a>            w._changed_id <span class="op">=</span> w.<span class="ex">connect</span>(<span class="st">'toggled'</span>, <span class="va">self</span>._on_toggled)</span>
+<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a>            w._val <span class="op">=</span> val</span>
+<span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.widget_for_size_group <span class="op">=</span> <span class="va">None</span></span>
+<span id="cb4-50"><a href="#cb4-50" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.<span class="bu">reload</span>()</span>
+<span id="cb4-51"><a href="#cb4-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-52"><a href="#cb4-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-53"><a href="#cb4-53" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 옵션이 변경되었을 때 호출된다.</span></span>
+<span id="cb4-54"><a href="#cb4-54" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> _on_toggled(<span class="va">self</span>, w):</span>
+<span id="cb4-55"><a href="#cb4-55" aria-hidden="true" tabindex="-1"></a>        active <span class="op">=</span> w.get_active()</span>
+<span id="cb4-56"><a href="#cb4-56" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="kw">not</span> <span class="va">self</span>._multiple_selection <span class="kw">and</span> active:</span>
+<span id="cb4-57"><a href="#cb4-57" aria-hidden="true" tabindex="-1"></a>            <span class="cf">for</span> v <span class="kw">in</span> <span class="va">self</span>._values:</span>
+<span id="cb4-58"><a href="#cb4-58" aria-hidden="true" tabindex="-1"></a>                <span class="co"># 옵션을 리스트에서 없앤다.</span></span>
+<span id="cb4-59"><a href="#cb4-59" aria-hidden="true" tabindex="-1"></a>                <span class="va">self</span>._parent_settings.setting_remove_from_list(TypingTweakGroup.XKB_GSETTINGS_NAME, v)</span>
+<span id="cb4-60"><a href="#cb4-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-61"><a href="#cb4-61" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> w._val <span class="kw">in</span> <span class="va">self</span>._values <span class="kw">and</span> <span class="kw">not</span> active:</span>
+<span id="cb4-62"><a href="#cb4-62" aria-hidden="true" tabindex="-1"></a>            <span class="co"># 옵션을 리스트에서 없앤다.</span></span>
+<span id="cb4-63"><a href="#cb4-63" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>._parent_settings.setting_remove_from_list(TypingTweakGroup.XKB_GSETTINGS_NAME, w._val)</span>
+<span id="cb4-64"><a href="#cb4-64" aria-hidden="true" tabindex="-1"></a>        <span class="cf">elif</span> active <span class="kw">and</span> <span class="kw">not</span> w._val <span class="kw">in</span> <span class="va">self</span>._values <span class="kw">and</span> w._val:</span>
+<span id="cb4-65"><a href="#cb4-65" aria-hidden="true" tabindex="-1"></a>            <span class="co"># 옵션을 리스트에 추가한다.</span></span>
+<span id="cb4-66"><a href="#cb4-66" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>._parent_settings.setting_add_to_list(TypingTweakGroup.XKB_GSETTINGS_NAME, w._val)</span></code></pre></div>
+<h2 id="gsettingssetting">GSettingsSetting</h2>
+<p><code>setting_add_to_list</code> 함수 <code>GsettingsSetting</code> 클래스의 메소드로 gtweak/gsettings.py<a href="#fn17" class="footnote-ref" id="fnref17" role="doc-noteref"><sup>17</sup></a> 파일에 선언되어있다.
+GSettings가 간단한 값을 저장하고 읽는 것만을 지원하기 때문에 리스트를 쉽게 다룰 수 있도록
+값을 하나 추가 혹은 삭제하는 함수들이다.
+<code>setting_add_to_list</code> 함수는 <code>self[key] = vals</code><a href="#fn18" class="footnote-ref" id="fnref18" role="doc-noteref"><sup>18</sup></a> 코드로 설정 값을 저장한다. Python에서 <code>[]</code> 연산자로 값을 쓰는 경우 <code>__setitem__</code> 함수가 호출된다.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> setting_add_to_list(<span class="va">self</span>, key, value):</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>        <span class="co">&quot;&quot;&quot; helper function, ensures value is present in the GSettingsList at key &quot;&quot;&quot;</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>        <span class="cf">assert</span> <span class="va">self</span>._setting_check_is_list(key)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>        vals <span class="op">=</span> <span class="va">self</span>[key]</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> value <span class="kw">not</span> <span class="kw">in</span> vals:</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>            vals.append(value)</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>[key] <span class="op">=</span> vals</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="va">True</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> setting_remove_from_list(<span class="va">self</span>, key, value):</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>        <span class="co">&quot;&quot;&quot; helper function, removes value in the GSettingsList at key (if present)&quot;&quot;&quot;</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>        <span class="cf">assert</span> <span class="va">self</span>._setting_check_is_list(key)</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>        vals <span class="op">=</span> <span class="va">self</span>[key]</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>        <span class="cf">try</span>:</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>            vals.remove(value)</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>[key] <span class="op">=</span> vals</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="va">True</span></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>        <span class="cf">except</span> <span class="pp">ValueError</span>:</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>            <span class="co"># not present</span></span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>            <span class="cf">pass</span></span></code></pre></div>
+<h2 id="pygobject의-gsettings">PyGObject의 GSettings</h2>
+<p><code>__setitem__</code> 함수는 <code>GsettingsSetting</code>가 상속하고 있는 <code>Gio.Settings</code> 클래스에 정의되어있다. <code>Gio</code> 코드는 PyGObject<a href="#fn19" class="footnote-ref" id="fnref19" role="doc-noteref"><sup>19</sup></a> 프로젝트에 정의되어 있다. PyGObject는 Python언어에서 Gnome과 관련된 GTK, GStreamer, WebKitGTK, GLib, GIO등의 라이브러리에 대한 바인딩을 제공해주는 라이브러리다.
+PyGObject레포지토리의 gi/overrides/Gio.py<a href="#fn20" class="footnote-ref" id="fnref20" role="doc-noteref"><sup>20</sup></a> 코드 안에 <code>Settings</code><a href="#fn21" class="footnote-ref" id="fnref21" role="doc-noteref"><sup>21</sup></a> class가 선언되어있으며, 그 안에 <code>__setitem__</code><a href="#fn22" class="footnote-ref" id="fnref22" role="doc-noteref"><sup>22</sup></a> 함수가 선언되어있다. <code>Settings</code> class는 gio의 Settings 모듈에 Python 딕셔너리 인터페이스를 제공해주는 클래스다.
+<code>__setitem__</code>함수는 <code>set_value</code><a href="#fn23" class="footnote-ref" id="fnref23" role="doc-noteref"><sup>23</sup></a> 함수를 호출하는데, 이 함수는 <code>gio</code>의 <code>g_settings_set_value</code><a href="#fn24" class="footnote-ref" id="fnref24" role="doc-noteref"><sup>24</sup></a>의 wrapper다.<a href="#fn25" class="footnote-ref" id="fnref25" role="doc-noteref"><sup>25</sup></a></p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Settings(Gio.Settings):</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">'''Provide dictionary-like access to GLib.Settings.'''</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">__init__</span> <span class="op">=</span> deprecated_init(Gio.Settings.<span class="fu">__init__</span>,</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>                               arg_names<span class="op">=</span>(<span class="st">'schema'</span>, <span class="st">'path'</span>, <span class="st">'backend'</span>))</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__contains__</span>(<span class="va">self</span>, key):</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> key <span class="kw">in</span> <span class="va">self</span>.list_keys()</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__len__</span>(<span class="va">self</span>):</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="bu">len</span>(<span class="va">self</span>.list_keys())</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__iter__</span>(<span class="va">self</span>):</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> key <span class="kw">in</span> <span class="va">self</span>.list_keys():</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>            <span class="cf">yield</span> key</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>    <span class="co"># ...</span></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__setitem__</span>(<span class="va">self</span>, key, value):</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>        <span class="co"># set_value() aborts the program on an unknown key</span></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> key <span class="kw">not</span> <span class="kw">in</span> <span class="va">self</span>:</span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>            <span class="cf">raise</span> <span class="pp">KeyError</span>(<span class="st">'unknown key: </span><span class="sc">%r</span><span class="st">'</span> <span class="op">%</span> (key,))</span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>        <span class="co"># ...</span></span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> type_ <span class="op">==</span> <span class="st">'type'</span>:</span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>            <span class="co"># ...</span></span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>        <span class="cf">elif</span> type_ <span class="op">==</span> <span class="st">'enum'</span>:</span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>            <span class="co"># ...</span></span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>        <span class="cf">elif</span> type_ <span class="op">==</span> <span class="st">'range'</span>:</span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>            <span class="co"># ...</span></span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>            <span class="cf">raise</span> <span class="pp">NotImplementedError</span>(<span class="st">'Cannot handle allowed type range class '</span> <span class="op">+</span> <span class="bu">str</span>(type_))</span>
+<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a>        <span class="co"># C로 짜여진 gio의 g_settings_set_value 함수를 호출한다.</span></span>
+<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.set_value(key, GLib.Variant(type_str, value))</span></code></pre></div>
+<h2 id="gobject-introspection">GObject introspection</h2>
+<p>GTK는 다양한 언어에 대한 binding을 쉽게 만들기 위해서 특별한 구조를 사용한다.
+GObject Introspection 프로젝트<a href="#fn26" class="footnote-ref" id="fnref26" role="doc-noteref"><sup>26</sup></a>는 GTK 소스코드로부터 각 API정보를 XML이나 바이너리 파일로 추출해서 해당 정보를 바탕으로 binding을 생성한다. Python binding은 Python 소스코드에서 import하는 과정에서 API 정보를 바탕으로 바인딩 코드를 생성한다.</p>
+<p>다음 코드는 PyGObject로 간단한 윈도우를 하나 띄우는 예시 코드다.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> gi</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>gi.require_version(<span class="st">&quot;Gtk&quot;</span>, <span class="st">&quot;3.0&quot;</span>)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> gi.repository <span class="im">import</span> Gtk</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>window <span class="op">=</span> Gtk.Window(title<span class="op">=</span><span class="st">&quot;Hello World&quot;</span>)</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>window.show()</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>window.<span class="ex">connect</span>(<span class="st">&quot;destroy&quot;</span>, Gtk.main_quit)</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>Gtk.main()</span></code></pre></div>
+<p><code>from gi.repository import Gtk</code>를 사용하고 있으나 gi.repository 를 찾아 들어가면 Gtk 모듈을 찾을 수 없다.
+PyGObject의 gi/repository/__init__.py 파일을 보면 <code>sys.meta_path</code><a href="#fn27" class="footnote-ref" id="fnref27" role="doc-noteref"><sup>27</sup></a>에 <code>DynamicImporter</code>를 추가<a href="#fn28" class="footnote-ref" id="fnref28" role="doc-noteref"><sup>28</sup></a>하는 게 전부다.
+<code>sys.meta_path</code>는 Python이 import 과정을 확장하는 방법 중의 하나다.
+<code>DynamicImporter</code><a href="#fn29" class="footnote-ref" id="fnref29" role="doc-noteref"><sup>29</sup></a>는 Python Importer Protocol을 따르는 클래스로 <code>get_introspection_module</code> 함수를 호출해서 introspection으로 부터 모듈을 가져온다.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># gi/repository/__init__.py 파일</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> ..importer <span class="im">import</span> DynamicImporter</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co"># sys.meta_path에 DynamicImporter를 추가한다.</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>sys.meta_path.append(DynamicImporter(<span class="st">'gi.repository'</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> DynamicImporter(<span class="bu">object</span>):</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Note: see PEP302 for the Importer Protocol implemented below.</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># ...</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> load_module(<span class="va">self</span>, fullname):</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> fullname <span class="kw">in</span> sys.modules:</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> sys.modules[fullname]</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>        <span class="co"># ...</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>        <span class="cf">with</span> _check_require_version(namespace, stacklevel<span class="op">=</span>stacklevel):</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>            <span class="cf">try</span>:</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>                <span class="co"># get_introspection_module 함수가 introspection에서 모듈을 생성한다.</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>                introspection_module <span class="op">=</span> get_introspection_module(namespace)</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>            <span class="cf">except</span> RepositoryError <span class="im">as</span> e:</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>                <span class="cf">raise</span> <span class="pp">ImportError</span>(e)</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Import all dependencies first so their init functions</span></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>            <span class="co"># (gdk_init, ..) in overrides get called.</span></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>            <span class="co"># https://bugzilla.gnome.org/show_bug.cgi?id=656314</span></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>            <span class="cf">for</span> dep <span class="kw">in</span> repository.get_immediate_dependencies(namespace):</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>                importlib.import_module(<span class="st">'gi.repository.'</span> <span class="op">+</span> dep.split(<span class="st">&quot;-&quot;</span>)[<span class="dv">0</span>])</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>            dynamic_module <span class="op">=</span> load_overrides(introspection_module)</span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>        dynamic_module.<span class="va">__file__</span> <span class="op">=</span> <span class="st">'&lt;</span><span class="sc">%s</span><span class="st">&gt;'</span> <span class="op">%</span> fullname</span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>        dynamic_module.__loader__ <span class="op">=</span> <span class="va">self</span></span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>        sys.modules[fullname] <span class="op">=</span> dynamic_module</span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> dynamic_module</span></code></pre></div>
+<p>IntrospectionModule<a href="#fn30" class="footnote-ref" id="fnref30" role="doc-noteref"><sup>30</sup></a>은 <code>repository.find_by_name</code> 함수를 호출<a href="#fn31" class="footnote-ref" id="fnref31" role="doc-noteref"><sup>31</sup></a>하여 타입의 정보를 가져온 뒤
+해당 정보를 바탕으로 Python 값을 만든다.
+<code>repository.find_by_name</code><a href="#fn32" class="footnote-ref" id="fnref32" role="doc-noteref"><sup>32</sup></a>은 g_irepository_find_by_name<a href="#fn33" class="footnote-ref" id="fnref33" role="doc-noteref"><sup>33</sup></a>이라는 C로 작성된 GIRepository 라이브러리<a href="#fn34" class="footnote-ref" id="fnref34" role="doc-noteref"><sup>34</sup></a>의 함수를 호출한다.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> IntrospectionModule(<span class="bu">object</span>):</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">&quot;&quot;&quot;An object which wraps an introspection typelib.</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="co">    This wrapping creates a python module like representation of the typelib</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="co">    using gi repository as a foundation. Accessing attributes of the module</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="co">    will dynamically pull them in and create wrappers for the members.</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="co">    These members are then cached on this introspection module.</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="co">    &quot;&quot;&quot;</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    <span class="co"># ...</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__getattr__</span>(<span class="va">self</span>, name):</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>        <span class="co"># repository.find_by_name은 pygi-repository.c의_wrap_g_irepository_find_by_name를 부른다.</span></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>        info <span class="op">=</span> repository.find_by_name(<span class="va">self</span>._namespace, name)</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="kw">not</span> info:</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>            <span class="cf">raise</span> <span class="pp">AttributeError</span>(<span class="st">&quot;</span><span class="sc">%r</span><span class="st"> object has no attribute </span><span class="sc">%r</span><span class="st">&quot;</span> <span class="op">%</span> (</span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>                                 <span class="va">self</span>.<span class="va">__name__</span>, name))</span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>        <span class="co"># 이 뒤로는 info의 값에 맞게 Python Object를 만드는 과정이다.</span></span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="bu">isinstance</span>(info, EnumInfo):</span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>            g_type <span class="op">=</span> info.get_g_type()</span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>            wrapper <span class="op">=</span> g_type.pytype</span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> wrapper <span class="kw">is</span> <span class="va">None</span>:</span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>                <span class="co"># ...</span></span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>                wrapper.__info__ <span class="op">=</span> info</span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>                wrapper.__module__ <span class="op">=</span> <span class="st">'gi.repository.'</span> <span class="op">+</span> info.get_namespace()</span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a>                <span class="co"># ...</span></span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a>                <span class="cf">for</span> value_info <span class="kw">in</span> info.get_values():</span>
+<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a>                    value_name <span class="op">=</span> value_info.get_name_unescaped().translate(ascii_upper_trans)</span>
+<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a>                    <span class="bu">setattr</span>(wrapper, value_name, wrapper(value_info.get_value()))</span>
+<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a>                <span class="cf">for</span> method_info <span class="kw">in</span> info.get_methods():</span>
+<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a>                    <span class="bu">setattr</span>(wrapper, method_info.<span class="va">__name__</span>, method_info)</span>
+<span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-35"><a href="#cb10-35" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> g_type <span class="op">!=</span> TYPE_NONE:</span>
+<span id="cb10-36"><a href="#cb10-36" aria-hidden="true" tabindex="-1"></a>                g_type.pytype <span class="op">=</span> wrapper</span>
+<span id="cb10-37"><a href="#cb10-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-38"><a href="#cb10-38" aria-hidden="true" tabindex="-1"></a>        <span class="cf">elif</span> <span class="bu">isinstance</span>(info, RegisteredTypeInfo):</span>
+<span id="cb10-39"><a href="#cb10-39" aria-hidden="true" tabindex="-1"></a>            <span class="co"># ...</span></span>
+<span id="cb10-40"><a href="#cb10-40" aria-hidden="true" tabindex="-1"></a>        <span class="cf">elif</span> <span class="bu">isinstance</span>(info, FunctionInfo):</span>
+<span id="cb10-41"><a href="#cb10-41" aria-hidden="true" tabindex="-1"></a>            wrapper <span class="op">=</span> info</span>
+<span id="cb10-42"><a href="#cb10-42" aria-hidden="true" tabindex="-1"></a>        <span class="cf">elif</span> <span class="bu">isinstance</span>(info, ConstantInfo):</span>
+<span id="cb10-43"><a href="#cb10-43" aria-hidden="true" tabindex="-1"></a>            wrapper <span class="op">=</span> info.get_value()</span>
+<span id="cb10-44"><a href="#cb10-44" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
+<span id="cb10-45"><a href="#cb10-45" aria-hidden="true" tabindex="-1"></a>            <span class="cf">raise</span> <span class="pp">NotImplementedError</span>(info)</span>
+<span id="cb10-46"><a href="#cb10-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-47"><a href="#cb10-47" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Cache the newly created wrapper which will then be</span></span>
+<span id="cb10-48"><a href="#cb10-48" aria-hidden="true" tabindex="-1"></a>        <span class="co"># available directly on this introspection module instead of being</span></span>
+<span id="cb10-49"><a href="#cb10-49" aria-hidden="true" tabindex="-1"></a>        <span class="co"># lazily constructed through the __getattr__ we are currently in.</span></span>
+<span id="cb10-50"><a href="#cb10-50" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.__dict__[name] <span class="op">=</span> wrapper</span>
+<span id="cb10-51"><a href="#cb10-51" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> wrapper</span></code></pre></div>
+<h2 id="gsettings-프로그램">GSettings 프로그램</h2>
+<p>GSettings<a href="#fn35" class="footnote-ref" id="fnref35" role="doc-noteref"><sup>35</sup></a>는 어플리케이션이 설정파일을 저장할 수 있는 간단한 데이터베이스다.
+도메인 이름을 역순으로 한것과 같은 application id를 지정해 어플리케이션벌 데이터를 나눈다.
+<code>gsettings</code> 커맨드라인 도구로 저장된 데이터들 읽거나 수정할 수 있다.</p>
+<p>gtweak/tweaks/tweak_group_xkb.py의 TypingTweakGroup<a href="#fn36" class="footnote-ref" id="fnref36" role="doc-noteref"><sup>36</sup></a> class의 선언을 보면 GSettings의 schema로 org.gnome.desktop.input-sources<a href="#fn37" class="footnote-ref" id="fnref37" role="doc-noteref"><sup>37</sup></a>를 쓰고 있고,
+키로 xkb-options<a href="#fn38" class="footnote-ref" id="fnref38" role="doc-noteref"><sup>38</sup></a>를 쓰고 있다. 따라서 Gnome Tweaks에서 옵션을 설정하면 GSettings의 디비를 업데이트한다는 것을 알 수 있다.</p>
+<p>GSettings는 <code>gsettings</code>라는 CLI 프로그램으로 값을 읽거나 쓸 수 있다.
+<code>gsettings get org.gnome.desktop.input-sources xkb-options</code>를 쉘에 입력하여 지금 설정된 값을 읽어올 수 있다.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> TypingTweakGroup(Gtk.Box):</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    XKB_GSETTINGS_SCHEMA <span class="op">=</span> <span class="st">&quot;org.gnome.desktop.input-sources&quot;</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    XKB_GSETTINGS_NAME <span class="op">=</span> <span class="st">&quot;xkb-options&quot;</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    <span class="co"># ...</span></span></code></pre></div>
+<h2 id="결론">결론</h2>
+<p>Gnome Tweaks에서 옵션을 하나 바꾸었을 때 무슨 일이 일어나는지 알아보았다.
+Gnome Tweaks는 Python으로 작성되었고, GTK를 사용한 UI 어플리케이션으로, UI의 이벤트를 받아
+GSettings의 값을 수정한다.</p>
+<p>코드를 읽는 과정에서 Python의 상속, GTK 어플리케이션의 구조, Python의 import 확장, GObject introspection에 대해 간단하게 살펴보았다.</p>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1"><p><a href="https://gitlab.gnome.org/GNOME/gnome-tweaks">Gnome Tweaks repository</a><a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p><a href="https://gitlab.gnome.org/GNOME/gnome-tweaks/-/blob/ebc0f25d361d172385302b9c9ba12503571a11cf/gtweak/tweaks/tweak_group_keymouse.py">gtweak/tweaks/tweak_group_keymouse.py</a><a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p><a href="https://gitlab.gnome.org/GNOME/gnome-tweaks/-/blob/ebc0f25d361d172385302b9c9ba12503571a11cf/gtweak/tweaks/tweak_group_keymouse.py#L216">gtweak/tweaks/tweak_group_keymouse.py#L216</a><a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p><a href="https://gitlab.gnome.org/GNOME/gnome-tweaks/-/blob/ebc0f25d361d172385302b9c9ba12503571a11cf/gtweak/tweaks/tweak_group_keymouse.py#L229">gtweak/tweaks/tweak_group_keymouse.py#L229</a><a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5"><p><a href="https://gitlab.gnome.org/GNOME/gnome-tweaks/-/blob/ebc0f25d361d172385302b9c9ba12503571a11cf/gtweak/tweaks/tweak_group_keymouse.py#L229">gtweak/tweaks/tweak_group_keymouse.py#L229</a><a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn6"><p><a href="https://gitlab.gnome.org/GNOME/gnome-tweaks/-/blob/ebc0f25d361d172385302b9c9ba12503571a11cf/gtweak/tweaks/tweak_group_keymouse.py#L241">gtweak/tweaks/tweak_group_keymouse.py#L241</a><a href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn7"><p><a href="https://gitlab.gnome.org/GNOME/gnome-tweaks/-/blob/ebc0f25d361d172385302b9c9ba12503571a11cf/gtweak/tweaks/tweak_group_keymouse.py#L241">gtweak/tweaks/tweak_group_keymouse.py#L241</a><a href="#fnref7" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn8"><p><a href="https://gitlab.gnome.org/GNOME/gnome-tweaks/-/blob/ebc0f25d361d172385302b9c9ba12503571a11cf/gtweak/tweaks/tweak_group_xkb.py">gtweak/tweaks/tweak_group_xkb.py</a><a href="#fnref8" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn9"><p><a href="https://gitlab.gnome.org/GNOME/gnome-tweaks/-/blob/ebc0f25d361d172385302b9c9ba12503571a11cf/gtweak/tweaks/tweak_group_xkb.py#L137">gtweak/tweaks/tweak_group_xkb.py#L137</a><a href="#fnref9" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn10"><p><a href="https://gitlab.gnome.org/GNOME/gnome-tweaks/-/blob/ebc0f25d361d172385302b9c9ba12503571a11cf/gtweak/tweaks/tweak_group_xkb.py#L162">gtweak/tweaks/tweak_group_xkb.py#L162</a><a href="#fnref10" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn11"><p><a href="https://gitlab.gnome.org/GNOME/gnome-tweaks/-/blob/ebc0f25d361d172385302b9c9ba12503571a11cf/gtweak/tweaks/tweak_group_xkb.py#L17">gtweak/tweaks/tweak_group_xkb.py#17</a><a href="#fnref11" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn12"><p><a href="https://gitlab.gnome.org/GNOME/gnome-tweaks/-/blob/ebc0f25d361d172385302b9c9ba12503571a11cf/gtweak/tweaks/tweak_group_xkb.py#L43">gtweak/tweaks/tweak_group_xkb.py#L43</a><a href="#fnref12" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn13"><p><a href="https://gitlab.gnome.org/GNOME/gnome-tweaks/-/blob/ebc0f25d361d172385302b9c9ba12503571a11cf/gtweak/tweaks/tweak_group_xkb.py#L80">gtweak/tweaks/tweak_group_xkb.py#L80</a><a href="#fnref13" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn14"><p><a href="https://gitlab.gnome.org/GNOME/gnome-tweaks/-/blob/ebc0f25d361d172385302b9c9ba12503571a11cf/gtweak/tweaks/tweak_group_xkb.py#L82">gtweak/tweaks/tweak_group_xkb.py#L82</a><a href="#fnref14" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn15"><p><a href="https://gitlab.gnome.org/GNOME/gnome-tweaks/-/blob/ebc0f25d361d172385302b9c9ba12503571a11cf/gtweak/tweaks/tweak_group_xkb.py#L88">gtweak/tweaks/tweak_group_xkb.py#L88</a><a href="#fnref15" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn16"><p><a href="https://gitlab.gnome.org/GNOME/gnome-tweaks/-/blob/ebc0f25d361d172385302b9c9ba12503571a11cf/gtweak/tweaks/tweak_group_xkb.py#L126">gtweak/tweaks/tweak_group_xkb.py#L126</a><a href="#fnref16" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn17"><p><a href="https://gitlab.gnome.org/GNOME/gnome-tweaks/-/blob/ebc0f25d361d172385302b9c9ba12503571a11cf/gtweak/gsettings.py#L161">gtweak/gsettings.py#L161</a><a href="#fnref17" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn18"><p><a href="https://gitlab.gnome.org/GNOME/gnome-tweaks/-/blob/ebc0f25d361d172385302b9c9ba12503571a11cf/gtweak/gsettings.py#L178">gtweak/gsettings.py#L178</a><a href="#fnref18" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn19"><p><a href="https://gitlab.gnome.org/GNOME/pygobject">PyGObject repository</a><a href="#fnref19" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn20"><p><a href="https://gitlab.gnome.org/GNOME/pygobject/-/blob/1a2bc1d0806ab6178f65125bf0b2283eb3378d4d/gi/overrides/Gio.py">gi/overrides/Gio.py</a><a href="#fnref20" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn21"><p><a href="https://gitlab.gnome.org/GNOME/pygobject/-/blob/1a2bc1d0806ab6178f65125bf0b2283eb3378d4d/gi/overrides/Gio.py#L233">gi/overrides/Gio.py#L233</a><a href="#fnref21" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn22"><p><a href="https://gitlab.gnome.org/GNOME/pygobject/-/blob/1a2bc1d0806ab6178f65125bf0b2283eb3378d4d/gi/overrides/Gio.py#L264">gi/overrides/Gio.py#L264</a><a href="#fnref22" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn23"><p><a href="https://gitlab.gnome.org/GNOME/pygobject/-/blob/1a2bc1d0806ab6178f65125bf0b2283eb3378d4d/gi/overrides/Gio.py#L295">gi/overrides/Gio.py#L295</a><a href="#fnref23" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn24"><p><a href="https://developer.gnome.org/gio/stable/GSettings.html#g-settings-set-value">gi의 g_settings_set_value</a><a href="#fnref24" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn25"><p>Gnome 프로젝터는 C로 짜여진 그놈 코드로부터 메타데이터를 추출하여 다른 언어들이 바인딩을 생성하는 전략을 쓴다.
+Python은 import 구문을 실행할 때 메타데이터를 읽어서 wrapper 함수나 모듈을 생성한다.<a href="#fnref25" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn26"><p><a href="https://gi.readthedocs.io/en/latest/">GObject Introspection</a><a href="#fnref26" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn27"><p>sys.meta_path는 Python이 import과정을 확장하는 방법 중 하나다. <a href="gi/repository/__init__.py#L25">python import</a><a href="#fnref27" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn28"><p><a href="https://gitlab.gnome.org/GNOME/pygobject/-/blob/1a2bc1d0806ab6178f65125bf0b2283eb3378d4d/gi/importer.py#103">gi/importer.py#L103</a><a href="#fnref28" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn29"><p><a href="https://gitlab.gnome.org/GNOME/pygobject/-/blob/1a2bc1d0806ab6178f65125bf0b2283eb3378d4d/gi/repository/__init__.py#L25">gi/repository/<strong>init</strong>.py#L25</a>
+https://gitlab.gnome.org/GNOME/pygobject/-/blob/1a2bc1d0806ab6178f65125bf0b2283eb3378d4d/gi/importer.py#L103<a href="#fnref29" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn30"><p><a href="https://gitlab.gnome.org/GNOME/pygobject/-/blob/1a2bc1d0806ab6178f65125bf0b2283eb3378d4d/gi/module.py#L98">gi/module.py#L98</a><a href="#fnref30" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn31"><p><a href="https://gitlab.gnome.org/GNOME/pygobject/-/blob/1a2bc1d0806ab6178f65125bf0b2283eb3378d4d/gi/module.py#L121">gi/module.py#L121</a><a href="#fnref31" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn32"><p><a href="https://gitlab.gnome.org/GNOME/pygobject/-/blob/1a2bc1d0806ab6178f65125bf0b2283eb3378d4d/gi/pygi-repository.c#L130">gi/pygi-repository.c#L130</a><a href="#fnref32" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn33"><p><a href="https://developer.gnome.org/gi/stable/GIRepository.html#g-irepository-find-by-name">g_irepository_find_by_name</a><a href="#fnref33" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn34"><p><a href="https://developer.gnome.org/gi/stable/GIRepository.html">GIRepository</a><a href="#fnref34" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn35"><p><a href="https://developer.gnome.org/GSettings/">Gsettings</a><a href="#fnref35" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn36"><p><a href="https://gitlab.gnome.org/GNOME/gnome-tweaks/-/blob/ebc0f25d361d172385302b9c9ba12503571a11cf/gtweak/tweaks/tweak_group_xkb.py#L137">gtweak/tweaks/tweak_group_xkb.py#L137</a><a href="#fnref36" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn37"><p><a href="https://gitlab.gnome.org/GNOME/gnome-tweaks/-/blob/ebc0f25d361d172385302b9c9ba12503571a11cf/gtweak/tweaks/tweak_group_xkb.py#L139">gtweak/tweaks/tweak_group_xkb.py#L139</a><a href="#fnref37" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn38"><p><a href="https://gitlab.gnome.org/GNOME/gnome-tweaks/-/blob/ebc0f25d361d172385302b9c9ba12503571a11cf/gtweak/tweaks/tweak_group_xkb.py#L140">gtweak/tweaks/tweak_group_xkb.py#L140</a><a href="#fnref38" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+
+<script src="https://utteranc.es/client.js" repo="majecty/blog-comments" issue-term="pathname" theme="github-light" crossorigin="anonymous" async>
+</script>
+
+            </div>
+            <div id="footer">
+                Site proudly generated by
+                <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+            </div>
+        </div>
+        <script type="text/javascript" src="https://wcs.naver.net/wcslog.js"></script>
+        <script type="text/javascript">
+        if(!wcs_add) var wcs_add = {};
+        wcs_add["wa"] = "1204a977388eb38";
+        wcs_do();
+        </script>
+    </body>
+</html>

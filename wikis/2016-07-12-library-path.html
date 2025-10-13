@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <meta property="og:type" content="website">
+        <meta property="og:title" content="주형 Blog - shared library를 어떻게 찾는가">
+        <meta property="og:image" content="https://blog.majecty.com/favicon_310.png">
+
+        <link rel="icon" type="image/png" href="../favicon_16.png" sizes="16x16">
+        <link rel="icon" type="image/png" href="../favicon_32.png" sizes="32x32">
+        <link rel="icon" type="image/png" href="../favicon_96.png" sizes="96x96">
+        <link rel="icon" type="image/png" href="../favicon_310.png" sizes="310x310">
+
+        <title>주형 Blog - shared library를 어떻게 찾는가</title>
+        <link rel="stylesheet" type="text/css" href="../css/default.css" />
+        <link rel="stylesheet" type="text/css" href="../css/syntax.css" />
+        <link rel="home" type="application/rss+xml" href="https://blog.majecty.com/atom.xml" />
+
+        <link href="//cdn.muicss.com/mui-0.9.41/css/mui.min.css" rel="stylesheet" type="text/css" />
+        <script src="//cdn.muicss.com/mui-0.9.41/js/mui.min.js"></script>
+
+        <link href="https://fonts.googleapis.com/css?family=Nanum+Gothic+Coding" rel="stylesheet"> 
+        <link href="https://fonts.googleapis.com/css?family=Nanum+Gothic" rel="stylesheet">
+        <script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-78778924-1', 'auto');
+ga('send', 'pageview');
+
+        </script>
+
+    </head>
+    <body class="mui-container">
+        <div style="margin:5px;">
+            <div id="header">
+                <div id="logo">
+                    
+                    <a href="../">주형 블로그</a>
+                    
+                </div>
+                <div id="navigation">
+                    
+                    <a href="../">Home</a>
+                    
+                    <a href="../contact.html">Contact</a>
+                    <a href="../wikis.html">Wiki</a>
+                </div>
+            </div>
+
+            <div id="content">
+                
+                <h1>shared library를 어떻게 찾는가</h1>
+                
+
+                <div class="info">
+    2016년 7월 12일에 씀
+</div>
+
+<div class="info">
+    
+    찾아보기: <a title="All pages tagged 'dynamic link'." href="../wikiTags/dynamic%20link.html" rel="tag">dynamic link</a>, <a title="All pages tagged 'shared library'." href="../wikiTags/shared%20library.html" rel="tag">shared library</a>
+    
+</div>
+
+<br />
+
+<h1 id="shared-library란">Shared Library란</h1>
+<p>static library와 대응되는 말. static library는 링크할 때 라이브러리가 같이 포함된다. shared library는 링크할 때 포함되지 않고 실행할 때 라이브러리를 불러온다.</p>
+<h2 id="왜-shared-library를-쓰는가">왜 Shared Library를 쓰는가</h2>
+<ul>
+<li>라이브러리가 빌드될 때 포함되지 않기 때문에 빌드 결과물의 용량이 줄어든다.</li>
+<li>다시 빌드하지 않고 라이브러리 업데이트가 가능하다.</li>
+</ul>
+<h2 id="shared-library의-일반적인-사용법">Shared Library의 일반적인 사용법</h2>
+<p>/lib 이나 /usr/local/lib이나 /usr/lib 같은 곳에 라이브러리를 설치한다. shared library를 필요로하는 프로그램을 실행시킬 때 이 표준 라이브러리에서 사용한다.</p>
+<h1 id="문제가-생기는-지점">문제가 생기는 지점</h1>
+<ul>
+<li>/lib이나 /usr/lib같은 곳에 접근할 수 있는 권한이 없을 때 원하는 라이브러리를 설치할 수 없다.</li>
+<li>정식버전이 아닌 라이브러리를 테스트하고 싶을 때 굳이 불안정한 버전을 설치하고 싶지 않다.</li>
+<li>빌드 결과물을 shared library와 함께 배포하고 싶을 때</li>
+</ul>
+<h1 id="문제-해결하기">문제 해결하기</h1>
+<h2 id="ld_library_path">LD_LIBRARY_PATH</h2>
+<p>환경변수 LD_LIBRARY_PATH 를 사용하면 표준적인 위치에서 찾기 전에 shared library를 탐색할 위치를 지정할 수 있다.</p>
+<h2 id="linuxs-rpath">Linux’s RPATH</h2>
+<p>Linux에서 RPATH를 이용하면 링크 타임에 라이브러리 로드 패쓰를 상대 위치로 지정할 수 있다.</p>
+<h2 id="os-xs-rpath">OS X’s <span class="citation" data-cites="rpath">@rpath</span></h2>
+<p>OS X 에서는 shared library의 install name에 <span class="citation" data-cites="rpath를">@rpath를</span> 사용하는 걸 권장한다. install name에 <span class="citation" data-cites="rpath가">@rpath가</span> 들어있으면 그 라이브러리를 사용하는 실행파일 혹은 라이브러리의 헤더에 적혀있는 rpath를 사용하여 shared library를 찾을 수 있다. rpath는 라이브러리를 링크할 때 설정할 수 있다. 혹은 빌드가 끝난 결과물의 rpath를 설정할 수 있다.</p>
+<p>otool -l (빌드된 파일) 을 사용하면 rpath가 어떻게 설정되어있는 지 볼 수 있다.</p>
+<p>otool -l output 예시. rpath가 상대좌표 lib으로 세팅되어있으면 다음과 같은 결과를 볼 수 있다.</p>
+<pre><code>Load command 16
+          cmd LC_RPATH
+      cmdsize 16
+         path lib (offset 12)</code></pre>
+<p><code>install_name_tool -add_rpath (rpath_directory) (binary)</code> 를 사용하면 바이너리 파일에 rpath를 추가할 수 있다.</p>
+<h1 id="reference">Reference</h1>
+<ul>
+<li><p><a href="http://man7.org/linux/man-pages/man8/ld.so.8.html">linux에서 shared library를 찾아서 로드하는 ld.so에 대한 내용</a></p></li>
+<li><p><a href="http://tldp.org/HOWTO/Program-Library-HOWTO/shared-libraries.html">Linux에서 shared library에 대한 자세한 내용</a></p></li>
+<li><p><a href="http://xahlee.info/UnixResource_dir/_/ldpath.html">왜 LD_LIBRARY_PATH는 나쁜가</a> : LD_LIBRARY_PATH를 어떻게 쓰면 좋은 지에 대해서 잘 설명되어있다.</p></li>
+<li><p><a href="https://developer.apple.com/library/mac/documentation/DeveloperTools/Conceptual/DynamicLibraries/100-Articles/OverviewOfDynamicLibraries.html#//apple_ref/doc/uid/TP40001873-SW2">apple developer dynamiclibrary</a></p></li>
+<li><p><a href="http://blog.leshill.org/blog/2010/04/24/dynamic-load-paths-in-osx.html">OS X에서 어떤 순서로 Path를 찾는가</a></p></li>
+<li><p><a href="https://developer.apple.com/legacy/library/documentation/Darwin/Reference/ManPages/man1/dyld.1.html">OSX reference for DYLD_LIBRARY_PATH</a></p></li>
+<li><p><a href="https://wiki.debian.org/RpathIssue">Debian에서 Rpath처리하기</a></p></li>
+<li><p><a href="https://github.com/conda/conda-build/issues/279">OS x rpath 사용 예시</a></p></li>
+<li><p><a href="https://www.mikeash.com/pyblog/friday-qa-2009-11-06-linking-and-install-names.html">install name, @executable_path, @loader_path, @rapth에 대한 설명</a></p></li>
+</ul>
+
+<script src="https://utteranc.es/client.js" repo="majecty/blog-comments" issue-term="pathname" theme="github-light" crossorigin="anonymous" async>
+</script>
+
+            </div>
+            <div id="footer">
+                Site proudly generated by
+                <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+            </div>
+        </div>
+        <script type="text/javascript" src="https://wcs.naver.net/wcslog.js"></script>
+        <script type="text/javascript">
+        if(!wcs_add) var wcs_add = {};
+        wcs_add["wa"] = "1204a977388eb38";
+        wcs_do();
+        </script>
+    </body>
+</html>

@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <meta property="og:type" content="website">
+        <meta property="og:title" content="주형 Blog - Tendermint 컨센서스 구현">
+        <meta property="og:image" content="https://blog.majecty.com/favicon_310.png">
+
+        <link rel="icon" type="image/png" href="../favicon_16.png" sizes="16x16">
+        <link rel="icon" type="image/png" href="../favicon_32.png" sizes="32x32">
+        <link rel="icon" type="image/png" href="../favicon_96.png" sizes="96x96">
+        <link rel="icon" type="image/png" href="../favicon_310.png" sizes="310x310">
+
+        <title>주형 Blog - Tendermint 컨센서스 구현</title>
+        <link rel="stylesheet" type="text/css" href="../css/default.css" />
+        <link rel="stylesheet" type="text/css" href="../css/syntax.css" />
+        <link rel="home" type="application/rss+xml" href="https://blog.majecty.com/atom.xml" />
+
+        <link href="//cdn.muicss.com/mui-0.9.41/css/mui.min.css" rel="stylesheet" type="text/css" />
+        <script src="//cdn.muicss.com/mui-0.9.41/js/mui.min.js"></script>
+
+        <link href="https://fonts.googleapis.com/css?family=Nanum+Gothic+Coding" rel="stylesheet"> 
+        <link href="https://fonts.googleapis.com/css?family=Nanum+Gothic" rel="stylesheet">
+        <script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-78778924-1', 'auto');
+ga('send', 'pageview');
+
+        </script>
+
+    </head>
+    <body class="mui-container">
+        <div style="margin:5px;">
+            <div id="header">
+                <div id="logo">
+                    
+                    <a href="../">주형 블로그</a>
+                    
+                </div>
+                <div id="navigation">
+                    
+                    <a href="../">Home</a>
+                    
+                    <a href="../contact.html">Contact</a>
+                    <a href="../wikis.html">Wiki</a>
+                </div>
+            </div>
+
+            <div id="content">
+                
+                <h1>Tendermint 컨센서스 구현</h1>
+                
+
+                <div class="info">
+    2020년 12월 28일에 씀
+</div>
+
+<div class="info">
+    
+    찾아보기: <a title="All pages tagged 'blockchain'." href="../tags/blockchain.html" rel="tag">blockchain</a>, <a title="All pages tagged 'CodeChain'." href="../tags/CodeChain.html" rel="tag">CodeChain</a>, <a title="All pages tagged 'Tendermint'." href="../tags/Tendermint.html" rel="tag">Tendermint</a>
+    
+</div>
+
+<br />
+
+<p>CodeChain을 만들 때 팀원별로 분야를 정해서 구현했다. 나는 컨센서스를 맡았다.
+초반에 어떤 분야를 맡을지 선택할 수 있었다.
+나는 복잡한 시스템에서 생기는 문제를 디버깅하길 좋아해서 컨센서스를 골랐었다.
+꽤 괜찮은 선택이었다. 그 뒤 몇 달, 여러 컴퓨터에서 동작하며 서로 통신하는,
+멀티 쓰레드 프로그램의 코드를 열심히 고쳐나갔다.</p>
+<p>나는 컨센서스 중에서도 텐더민트 컨센서스 알고리즘을 구현했다.
+(코드체인은 PoW 알고리즘도 지원하는데, 이 부분은 다른 분이 구현했다.)
+아예 바닥부터 짠 건 아니었고, 컨셉수준의 구현이 되어있을 때부터 참여했다.
+몇달의 디버깅, 리팩토링 과정을 통해서 지금은 큰 문제 없이 몇년 째 잘 동작하고 있다.</p>
+<hr />
+<p>텐더민트 컨센서스는 정해진 수의 위원회에서 2/3이상의 허락을 받는 블록을
+체인에 포함시키는 알고리즘이다. 컴퓨팅 파워가 높은 참여자가 블록을 생성하는 PoW 컨센서스와 다르게,
+지분을 많이 가진 참여자들이 모여서 블록을 생성하는 PoS 방식에서 주로 사용하는 알고리즘이다.
+텐더민트 이외에도 비슷한 알고리즘들이 여럿 있다.</p>
+<p>텐더민트 알고리즘의 핵심은 두번의 투표 과정에 있다. 100명의 위원이 서로 돌아가면서 블록을 생성한다고 생각해보자.
+한 위원이 블록을 제안하면, 제안한 위원 포함 100명의 위원이 해당 블록을 넣을지 말지 투표한다.
+2/3 보다 많은, 즉 67 표 이상의 찬성을 받은 블록이 체인에 포함된다.</p>
+<p>내가 처음 텐더민트 알고리즘 읽었을 때 헷갈리는 점 중 하나가 블록에 찬성을 던지는 기준이었다.
+각 위원이 자신에게 경제적인 이득을 주는 블록만 넣으러고 하면 블록 생성이 영원히 안될 것 같았다.
+텐더민트 알고리즘에서 각 위원들의 경제적인 인센티브는 고려하지 않는다. 모든 위원들은 정해진 규칙을 따라야 한다.
+규칙에 맞게 생성된 블록에 항상 찬성 투표를 해야 한다. 위원들의 경제적인 인센티브는 컨센서스 알고리즘 바깥에서
+정당한 보상 체계를 만들어서 해결해야 한다.</p>
+<p>합의를 하기 위해서 왜 두 번의 투표가 필요할까? 위원들이 직접 사람이고, 만나서 투표할 수 있었다면 한 번의
+투표로 블록이 체인에 포함되도록 결정할 수 있을 것이다. 문제는 블록체인은 p2p 소프트웨어이고
+누구나 언제든 룰을 악용할 수 있기 때문이다. 네트워크를 통해 받은 모든 메시지든 가짜일 수도 있다.
+와야하는 메시지가 안 올 수도 있다. 이런 환경에서 단 두번의 투표로 안정적인 결정을 내릴 수 있다는 게
+오히려 더 신기하게 느껴진다.</p>
+<p>다만 텐더민트와 비슷한 알고리즘들(우리는 PBFT 계열 알고리즘이라 불렀다.)은 그 어떤 상황에서도
+전체 위원의 2/3보다 많은 노드들이 정상적이라고 가정한다. 이 가정이 깨지면 안전하게 동작하는 방법이 없다.</p>
+<p>텐더민트 알고리즘에서 첫 번째 투표른 Prevote, 두 번째 투표는 Precommit이라고 부른다.</p>
+<hr />
+<p>텐더민트 알고리즘에서 각 참여자들은 다음과 같이 행동한다. 먼저 블록 제안자가 블록을 만들어 제안한다.
+블록 제안자가 아닌 위원은 제안된 블록이 규칙에 맞게 생성되었다면 해당 블록에 찬성하는 Prevote 메시지를
+네트워크에 뿌린다. 각 노드들은 전체 Prevote중 2/3개 이상의 표를 받을 때까지 기다린다.</p>
+<p>Prevote 표를 모았을 때 전체 위원의 2/3 이상이 해당 블록에 찬성했다면 해당 블록에 Precommit 메시지를 보낸다.
+전체 Prevote 표 중 2/3 이상 모았는데 한 블록에 대한 찬성이 2/3를 넘지 않았다면 해당 블록을 거절하는 Precommit
+메시지를 보낸다.</p>
+<p>한 블록에 대해 2/3 이상의 찬성 Precommit을 모으면 해당 블록은 확정된 블록이라고 판단하고 그 블록 다음에 이을 블록을 준비한다.
+2/3 이상의 Precommit 표를 모았을 때 찬성이 2/3가 아니라면 다음 블록 제안자가 이전 블록을 무시하고 새로운 블록을 제안한다.</p>
+<hr />
+<p>2/3 이상의 찬성 Prevote를 받았을 때 블록을 확정짓지 못하는 이유가 뭘까.
+나는 2/3 이상의 Prevote를 봤지만, 남은 못봤을 수 있기 때문이다.</p>
+<p>100개의 위원 있다고 가정해보자.
+그리고 어떤 블록에 대해 67 개의 찬성 Prevote, 33개의 반대 Prevote가 있다고 가정해보자.
+(Proposal 블록이 늦게 생성되고, 전파가 잘 안되면 모두가 정직해도 이런 경우가 발생할 수 있다.)
+이 때 한 노드가 67 개의 찬성표를 봤다고 하더라도, 다른 노드는 33개의 반대와 34개의 찬성 표를 받을 수도 있다.</p>
+<p>모든 표가 언젠가 정해진 시간 안에 도착한다는 보장이 있다면 모두가 100개의 표를 보고 판단할 수 있으므로
+투표 한 번으로도 안전할 것이다. 하지만 블록체인 세상은 험난하다. 중간에 몇 노드가 랜선이 끊어져서 패킷을
+보내지 못해도 동작해야 한다. 몇 몇 노드는 일부러 표를 안보낼 수도 있다.</p>
+<p>따라서 33개의 반대와 34개의 찬성 표를 받은 노드는 모든 표를 받지 못한 상태에서 판단을 내려야 한다.
+결국 67개의 찬성을 받은 노드와 (34개의 찬성과 33개의 반대)를 받은 노드는 서로 다른 결정을 내릴 수 밖에 없다.</p>
+<hr />
+<p>투표를 한 번 더 하면 뭐가 달라질 수 있을까?
+투표와 더불어 텐더민트에서 중요한 요소가 락이다. 한 블록에 대해서 2/3 이상의 찬성 Prevote를 본 노드는
+그 블록에 락을 잡는다. 앞으로 더 높은 단계의 락이 발생하기 전까지 해당 노드는 락이 걸린 블록에 대해서만
+찬성하고 나머지 블록에 대해서는 반대한다.</p>
+<p>여기서 락 덕분에 Prevote 스텝 이후에 상황을 간략하게 만들 수 있다.
+한 블록에 대해 찬성 Precommit 투표를 한 노드는 해당 블록에 락이 잡혀있다.
+블록을 확정지을 수 있는 조건은 2/3 이상의 Precommit 표를 확인하는 것이었다.
+락 덕분에 2/3 이상의 Precommit 표를 본 순간, 결국인 모든 노드들이 해당 블록을 확정지을 것이라고 판단할 수 있다.</p>
+<p>2/3 이상의 찬성 Precommit 표를 확인했다는 의미는 2/3이상의 노드가 해당 블록에 락을 잡았다는 의미이다.
+락이 잡히지 않은 노드들은 1/3 이하이므로 이들은 새로운 락을 만들 수 없다. 결국 2/3 이상의 위원이
+락을 잡은 블록에 대해 위원회 전체가 합의하게 된다.</p>
+<hr />
+<p>회사에서 다른 컨센서스들에 대해서도 공부했었다. 그 중 기억에 남는 게 페이스북이 주도하는
+리브라의 컨센서스였다. 큰 틀은 텐더민트와 같다. 리브라 역시 두 번의 투표과정을 통해서 블록을
+확정짓는다. 하지만 리브라는 Prevote와 Precommit을 나누지 않았다. 블록 제안과 투표, 블록 제안과 투표만을 반복한다.
+여기서 재밌는 점은 투표가 이전 블록에 대한 투표까지 포함한다는 점이다. 블록 N번에 대한 투표는
+블록 N번과 블록 N-1에다 찬성한다는 의미다. 일종의 파이프라인화된 텐더민트라고 볼 수 있다.</p>
+<p>리브라가 재밌던 점은 이렇게 파이프라이닝한 구조를 쓴 결과, 알고리즘의 특징을 증명하는 게 더 간단해졌다는
+점이었다. 텐더민트를 공부할 때보다 간단하게 알고리즘의 특징을 이해할 수 있었다.</p>
+<hr />
+<p>텐더민트 코드를 구현할 때 고생이 많았다. 네트워크, 블록 생성, 블록 검증, 타임아웃 등 모든 요소가 비동기 동작이었다. 언제 어떤 메시지가 어떤 순서로 올 지 모르기 때문에 이들을 대응하는 코드는 상당히 복잡해졌다.</p>
+<p>초반엔 변수별로 락을 잡는 멀티쓰레드 코드였다. 꽤 많은 스테이트가 필요해서 데드락이 여기 저기서 발생했다.
+우리 팀에서는 고민 후 싱글 쓰레드에 이벤트를 받아서 처리하는 코드로 고쳤었다. (아마 이부분은 내가 아닌 다른 동료분이
+하셨던 걸로 기억한다.)
+테스트 네트워크 돌리고, 문제 발생하면 여러 노드의 로그들 분석하고, 버그를 고치는 과정을 꽤나 많이 반복했었다. 몇 달의 과정을 거친 뒤 지금은 탈 없이 동작하고 있다.</p>
+<p>내가 참여했던 코드체인의 GitHub 레포:
+<a href="https://github.com/codechain-io/codechain">https://github.com/codechain-io/codechain</a></p>
+
+<script src="https://utteranc.es/client.js" repo="majecty/blog-comments" issue-term="pathname" theme="github-light" crossorigin="anonymous" async>
+</script>
+
+            </div>
+            <div id="footer">
+                Site proudly generated by
+                <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+            </div>
+        </div>
+        <script type="text/javascript" src="https://wcs.naver.net/wcslog.js"></script>
+        <script type="text/javascript">
+        if(!wcs_add) var wcs_add = {};
+        wcs_add["wa"] = "1204a977388eb38";
+        wcs_do();
+        </script>
+    </body>
+</html>

@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <meta property="og:type" content="website">
+        <meta property="og:title" content="주형 Blog - 2022년 풀 스크린 웹사이트 해상도 대응하기 - 1">
+        <meta property="og:image" content="https://blog.majecty.com/favicon_310.png">
+
+        <link rel="icon" type="image/png" href="../favicon_16.png" sizes="16x16">
+        <link rel="icon" type="image/png" href="../favicon_32.png" sizes="32x32">
+        <link rel="icon" type="image/png" href="../favicon_96.png" sizes="96x96">
+        <link rel="icon" type="image/png" href="../favicon_310.png" sizes="310x310">
+
+        <title>주형 Blog - 2022년 풀 스크린 웹사이트 해상도 대응하기 - 1</title>
+        <link rel="stylesheet" type="text/css" href="../css/default.css" />
+        <link rel="stylesheet" type="text/css" href="../css/syntax.css" />
+        <link rel="home" type="application/rss+xml" href="https://blog.majecty.com/atom.xml" />
+
+        <link href="//cdn.muicss.com/mui-0.9.41/css/mui.min.css" rel="stylesheet" type="text/css" />
+        <script src="//cdn.muicss.com/mui-0.9.41/js/mui.min.js"></script>
+
+        <link href="https://fonts.googleapis.com/css?family=Nanum+Gothic+Coding" rel="stylesheet"> 
+        <link href="https://fonts.googleapis.com/css?family=Nanum+Gothic" rel="stylesheet">
+        <script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-78778924-1', 'auto');
+ga('send', 'pageview');
+
+        </script>
+
+    </head>
+    <body class="mui-container">
+        <div style="margin:5px;">
+            <div id="header">
+                <div id="logo">
+                    
+                    <a href="../">주형 블로그</a>
+                    
+                </div>
+                <div id="navigation">
+                    
+                    <a href="../">Home</a>
+                    
+                    <a href="../contact.html">Contact</a>
+                    <a href="../wikis.html">Wiki</a>
+                </div>
+            </div>
+
+            <div id="content">
+                
+                <h1>2022년 풀 스크린 웹사이트 해상도 대응하기 - 1</h1>
+                
+
+                <div class="info">
+    2022년 1월 22일에 씀
+</div>
+
+<div class="info">
+    
+    찾아보기: <a title="All pages tagged 'web'." href="../tags/web.html" rel="tag">web</a>
+    
+</div>
+
+<br />
+
+<p>인터렉션이 중요한 웹사이트는 게임 같은 해상도 대응이 필요하다.
+<a href="https://bigkingtravel.com">대왕트래블2020</a>은 2020년에 내가 외주
+작업한 웹사이트 인데, 일반 웹페이지보다는 게임에 더 가깝다. 항상 전체
+화면을 가득채우며, 화면 스크롤은 쓰지 않는다. 작업하면서 게임 만들던
+느낌이 많이 났다.</p>
+<p>게임과 웹사이트를 둘 다 만들었었는데 둘이 화면을 보는 관점이 달라서
+재밌었다.</p>
+<h3 id="웹사이트의-방식">웹사이트의 방식</h3>
+<p>웹사이트의 경우 컨텐츠가 잘 보이는 것에만 관심을 가진다. 컨텐츠를
+적당히 블록 단위로 나누고, 해당 블록을 가로로 배치할지 세로로
+배치할지를 화면 크기에 따라 바꾼다. 때로는 작은 화면에서는 몇가지
+요소를 가리기도 한다.</p>
+<p>아래는 모바일에서 보이는 내 블로그 화면이다. 왼쪽 오른쪽 여백 이외에는
+글로 가득 채워져있다. 위에서 아래로 글이 계속 이어지며 한 화면을
+넘치는 내용은 스크롤을 통해 이어서 볼 수 있다.</p>
+<figure>
+<img src="../images/2022-01-22-a/majecty-blog-mobile.png" height="200px">
+<figcaption>
+예시 이미지 - 내 블로그
+</figcaption>
+</figure>
+<!-- ![예시 이미지 - 내
+블로그](/images/2022-01-22-a/majecty-blog-mobile.png) -->
+<p>twitter bootstrap을 쓰면 grid layout을 쓸 때 화면 크기에 따라 특정
+요소가 배치되 는 방식을 쉽게 바꿀 수 있다. 가로 길이가 큰 화면에서는
+한 가로 줄에 두 요소를 배치하다가 가로 길이가 작아지면, 한 가로 줄에
+하나씩만 배치할 수 있다.</p>
+<p><a href="https://getbootstrap.com/2.0.2/scaffolding.html#responsive">twitter bootstrap의 responsive design에 관한 문서
+링크</a>를
+보면 twitter bootstrap이 여러 화면을 처리하기 위한 방법이 적혀있다.</p>
+<h3 id="게임의-방식">게임의 방식</h3>
+<p>게임은 어떤 화면에서든 화면을 가득 채운다. 화면을 가득 채우는 배경이
+있고 UI 요소들이 화면의 가운데 혹은 네 모서리에 위치한다. 게임은 주로
+가상의 세상을 다루고, 가상의 세상은 크기가 무한하기에 알맞은 방식이다.</p>
+<p>솔리테어 덱드아웃은 모바일 게임이다. 화면 맨 위와 아래에 UI가 있으며
+그 안을 배경 이미지가 채운다.</p>
+<!-- ![예시 게임 이미지 - 솔리테어
+덱드아웃](/images/2022-01-22-a/solitare-decked-out.png) -->
+<figure>
+<img src="../images/2022-01-22-a/solitare-decked-out.png" height="200px">
+<figcaption>
+예시 게임 이미지 - 솔리테어 덱드아웃
+</figcaption>
+</figure>
+<p>몬스터헌터 월드는 3차원으로 구성된 세계를 다룬다. 화면의 크기가
+얼마이든 화면 전체를 이 3차원 세계가 채운다.</p>
+<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/wL5NiOc64ag" title="YouTube video player" frameborder="0" allow="accelerometer;
+autoplay; clipboard-write; encrypted-media; gyroscope;
+picture-in-picture" allowfullscreen>
+</iframe>
+<h2 id="게임-같은-웹사이트와-이에-대한-대응">게임 같은 웹사이트와 이에 대한 대응</h2>
+<p>웹페이지지만 게임처럼 새로운 세상을 담아야하는 웹사이트들도 있다.
+이러한 웹사이트는 일반적인 컨텐츠 기반 웹사이트가 하듯이 화면을 채울
+수 없다. 게임에서 사용하는 방식을 따와서 웹에서 이를 만들어보자.</p>
+<h3 id="레터박스">레터박스</h3>
+<p>가장 단순하고 쉬운 방식은 레터박스를 쓰는 것이다. 하나의 해상도를
+선택하고, 그 해상도와 다른 화면에서는 까만 네모로 빈 칸을 채우는
+것이다. 여러 해상도를 대응할 순 없지만, 적어도 원하는 모든 이미지와
+UI가 화면에 나오게 할 수 있다.</p>
+<p>레터박스마저도 안 한다면, 생각보다 큰 문제가 생긴다. 게임 UI에서는
+주요한 버튼들이 화면의 끝 부분에 위치한다. 해당 버튼들이 화면에 안
+보이게 되면서 인터렉셔을 할 수 없게 되기도 한다. (해상도 대응을 안 한
+게임을 아이패드에서 하다 보면 종종 이와 같은 경우를 만날 수 있다.)</p>
+<h3 id="레터박스-코드-예시">레터박스 코드 예시</h3>
+<p>아래 코드를 <a href="https://codepen.io/majecty/pen/mdBNExO">이 코드펜
+링크</a>에서 직접 실행해볼 수
+있다.</p>
+<p class="codepen" data-height="300" data-default-tab="css,result" data-slug-hash="mdBNExO" data-editable="true" data-user="majecty" style="height: 300px; box-sizing: border-box; display: flex;
+  align-items: center; justify-content: center; border: 2px solid;
+  margin: 1em 0; padding: 1em;">
+<span>See the Pen <a href="https://codepen.io/majecty/pen/mdBNExO"> letterbox-16-9</a> by
+majecty (<a href="https://codepen.io/majecty"><span class="citation" data-cites="majecty">@majecty</span></a>) on <a href="https://codepen.io">CodePen</a>.</span>
+</p>
+<script async src="https://cpwebassets.codepen.io/assets/embed/ei.js"></script>
+<p>HTML 코드</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">div</span><span class="dt">&gt;</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&lt;</span><span class="kw">div</span><span class="ot"> id</span><span class="op">=</span><span class="st">&quot;a169&quot;</span><span class="dt">&gt;&lt;/</span><span class="kw">div</span><span class="dt">&gt;</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;/</span><span class="kw">div</span><span class="dt">&gt;</span></span></code></pre></div>
+<p>CSS 코드</p>
+<p>아래는 레터박스를 구현한 코드다. calc와 vw, vh를 사용해서 가로 세로
+비율을 유지시켰다. margin-left, margin-top을 통해서 검은 배경을
+양쪽에 균등하게 배치한다. <code>@media</code> 태그를 사용해서 화면의 비율에
+따라서 다른 css가 적용되게 만들었다.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode css"><code class="sourceCode css"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>body {</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">margin</span><span class="ch">:</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="kw">padding</span><span class="ch">:</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="co">/*</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="co">  화면 바깥 영역을 검은색으로 칠한다.</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co">  */</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  <span class="kw">background</span><span class="ch">:</span> <span class="cn">black</span><span class="op">;</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="co">/*</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="co">  가로 16, 세로 9 비율보다 가로가 큰 경우</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="co">  height를 꽉 채우고 width를 height * 16/9로 맞춘다</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="co">  화면의 가운데에 두기 위해서 margin-left에 적절한 겂을 넣는다.</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="co">*/</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="pp">#a169</span> {</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>  <span class="kw">background</span><span class="ch">:</span> <span class="cn">blue</span><span class="op">;</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>  <span class="kw">width</span><span class="ch">:</span> <span class="fu">calc(</span><span class="dv">16</span> <span class="op">/</span> <span class="dv">9</span> <span class="op">*</span> <span class="dv">100</span><span class="dt">vh</span><span class="fu">)</span><span class="op">;</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>  <span class="kw">height</span><span class="ch">:</span> <span class="dv">100</span><span class="dt">vh</span><span class="op">;</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>  <span class="kw">margin-left</span><span class="ch">:</span> <span class="fu">calc(</span><span class="dv">50</span><span class="dt">vw</span> <span class="op">-</span> <span class="dv">16</span> <span class="op">/</span> <span class="dv">9</span> <span class="op">*</span> <span class="dv">50</span><span class="dt">vh</span><span class="fu">)</span><span class="op">;</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a><span class="co">/*</span></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><span class="co">  가로 16, 세로 9 비율보다 세로가 큰 경우</span></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a><span class="co">  width를 꽉 채우고 height를 width * 9/16으로 맞춘다.</span></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a><span class="co">  화면의 가운데에 두기 위해서 margin-top을 적절한 값으로 넣는다.</span></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a><span class="co">*/</span></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a><span class="im">@media</span> <span class="fu">(</span><span class="dv">max-aspect-ratio</span><span class="ch">:</span> <span class="dv">16</span>/<span class="dv">9</span><span class="fu">)</span> {</span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>  <span class="pp">#a169</span> {</span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>    <span class="kw">background</span><span class="ch">:</span> <span class="cn">red</span><span class="op">;</span></span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>    <span class="kw">width</span><span class="ch">:</span> <span class="dv">100</span><span class="dt">vw</span><span class="op">;</span></span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>    <span class="kw">height</span><span class="ch">:</span> <span class="fu">calc(</span><span class="dv">100</span><span class="dt">vw</span> <span class="op">*</span> <span class="dv">9</span> <span class="op">/</span> <span class="dv">16</span><span class="fu">)</span><span class="op">;</span></span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>    <span class="kw">margin-top</span><span class="ch">:</span> <span class="fu">calc(</span><span class="dv">50</span><span class="dt">vh</span> <span class="op">-</span> <span class="dv">9</span> <span class="op">/</span> <span class="dv">16</span> <span class="op">*</span> <span class="dv">50</span><span class="dt">vw</span><span class="fu">)</span><span class="op">;</span></span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>    <span class="kw">margin-left</span><span class="ch">:</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<h3 id="다음은">다음은</h3>
+<p>우리는 단순 레터박스보다 더 잘할 수 있다. 꼭 보여야하는 영역과 안
+보여도 되는 영역을 나눔으로써 더 많은 해상도를 대응할 수 있다. 그에
+대한 내용은 다음 글에서 다루기로 한다.</p>
+
+<script src="https://utteranc.es/client.js" repo="majecty/blog-comments" issue-term="pathname" theme="github-light" crossorigin="anonymous" async>
+</script>
+
+            </div>
+            <div id="footer">
+                Site proudly generated by
+                <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+            </div>
+        </div>
+        <script type="text/javascript" src="https://wcs.naver.net/wcslog.js"></script>
+        <script type="text/javascript">
+        if(!wcs_add) var wcs_add = {};
+        wcs_add["wa"] = "1204a977388eb38";
+        wcs_do();
+        </script>
+    </body>
+</html>

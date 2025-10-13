@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <meta property="og:type" content="website">
+        <meta property="og:title" content="주형 Blog - foldr과 tuple">
+        <meta property="og:image" content="https://blog.majecty.com/favicon_310.png">
+
+        <link rel="icon" type="image/png" href="../favicon_16.png" sizes="16x16">
+        <link rel="icon" type="image/png" href="../favicon_32.png" sizes="32x32">
+        <link rel="icon" type="image/png" href="../favicon_96.png" sizes="96x96">
+        <link rel="icon" type="image/png" href="../favicon_310.png" sizes="310x310">
+
+        <title>주형 Blog - foldr과 tuple</title>
+        <link rel="stylesheet" type="text/css" href="../css/default.css" />
+        <link rel="stylesheet" type="text/css" href="../css/syntax.css" />
+        <link rel="home" type="application/rss+xml" href="https://blog.majecty.com/atom.xml" />
+
+        <link href="//cdn.muicss.com/mui-0.9.41/css/mui.min.css" rel="stylesheet" type="text/css" />
+        <script src="//cdn.muicss.com/mui-0.9.41/js/mui.min.js"></script>
+
+        <link href="https://fonts.googleapis.com/css?family=Nanum+Gothic+Coding" rel="stylesheet"> 
+        <link href="https://fonts.googleapis.com/css?family=Nanum+Gothic" rel="stylesheet">
+        <script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-78778924-1', 'auto');
+ga('send', 'pageview');
+
+        </script>
+
+    </head>
+    <body class="mui-container">
+        <div style="margin:5px;">
+            <div id="header">
+                <div id="logo">
+                    
+                    <a href="../">주형 블로그</a>
+                    
+                </div>
+                <div id="navigation">
+                    
+                    <a href="../">Home</a>
+                    
+                    <a href="../contact.html">Contact</a>
+                    <a href="../wikis.html">Wiki</a>
+                </div>
+            </div>
+
+            <div id="content">
+                
+                <h1>foldr과 tuple</h1>
+                
+
+                <div class="info">
+    2016년 6월  6일에 씀
+</div>
+
+<div class="info">
+    
+    찾아보기: <a title="All pages tagged 'haskell'." href="../tags/haskell.html" rel="tag">haskell</a>, <a title="All pages tagged 'foldr'." href="../tags/foldr.html" rel="tag">foldr</a>, <a title="All pages tagged '하스켈'." href="../tags/%ED%95%98%EC%8A%A4%EC%BC%88.html" rel="tag">하스켈</a>, <a title="All pages tagged '2016-06-07-foldr-presentation'." href="../tags/2016-06-07-foldr-presentation.html" rel="tag">2016-06-07-foldr-presentation</a>
+    
+</div>
+
+<br />
+
+<p>tuple을 사용하면 foldr로 좀 더 많은 일들을 할 수 있습니다.</p>
+<h1 id="dropwhile-을-foldr로-표현하기">dropWhile 을 foldr로 표현하기</h1>
+<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>y <span class="ot">=</span> <span class="fu">foldr</span> f v</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>y [] <span class="ot">=</span> v</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>y (x<span class="op">:</span>xs) <span class="ot">=</span> x <span class="ot">`f`</span> (y xs)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">dropWhile</span><span class="ot"> ::</span> (a <span class="ot">-&gt;</span> <span class="dt">Bool</span>) <span class="ot">-&gt;</span> ([a] <span class="ot">-&gt;</span> [a])</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">dropWhile</span> p [] <span class="ot">=</span> []</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">dropWhile</span> p (x<span class="op">:</span>xs) <span class="ot">=</span> <span class="kw">if</span> p x <span class="kw">then</span> <span class="fu">dropWhile</span> p xs <span class="kw">else</span> x <span class="op">:</span> xs</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="co">-- foldr 스타일로 바꾸어 봅시다.</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="fu">dropWhile</span> p (x<span class="op">:</span>xs) <span class="ot">=</span> (\y ys <span class="ot">-&gt;</span> <span class="kw">if</span> p y <span class="kw">then</span> ys <span class="kw">else</span> y <span class="op">:</span> xs) x (<span class="fu">dropWhile</span> p xs)</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="co">-- foldr 스타일과 비슷하게 되었지만, 함수 안에서 xs가 필요해서 foldr로 바꿀 수 없습니다.</span></span></code></pre></div>
+<p>foldr 의 f 함수는 foldr이 적용된 리스트를 받아와야하지만 dropWhile의 f함수는 foldr이 적용되지 않은 리스트가 필요해서 foldr로 바꿀 수 없습니다.</p>
+<p>하지만 직접 dropWhile을 foldr로 만드는 게 아니라 한 번 돌아가는 과정을 거치면 foldr을 사용해서 dropWhile을 만들어낼 수 있습니다.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ot">dropWhile' ::</span> (a <span class="ot">-&gt;</span> <span class="dt">Bool</span>) <span class="ot">-&gt;</span> ([a] <span class="ot">-&gt;</span> ([a], [a]))</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>dropWhile' p xs <span class="ot">=</span> (<span class="fu">dropWhile</span> p xs, xs)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>dropWhile' p [] <span class="ot">=</span> ([], [])</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>dropWhile' p (x<span class="op">:</span>xs) <span class="ot">=</span> <span class="kw">if</span> p x <span class="kw">then</span> (<span class="fu">dropWhile</span> p xs, x<span class="op">:</span>xs) <span class="kw">else</span> (x<span class="op">:</span>xs, x<span class="op">:</span>xs)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>dropWhile' p (x<span class="op">:</span>xs) <span class="ot">=</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">let</span> (zs, _) <span class="ot">=</span> dropWhile' p xs</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">in</span> <span class="kw">if</span> p x <span class="kw">then</span> (zs, x<span class="op">:</span>xs) <span class="kw">else</span> (x<span class="op">:</span>xs, x<span class="op">:</span>xs)</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="co">-- zs = dropWhile p xs </span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>dropWhile' p (x<span class="op">:</span>xs) <span class="ot">=</span> (\y (zs, ys) <span class="ot">-&gt;</span> <span class="kw">if</span> p y <span class="kw">then</span> (zs, y<span class="op">:</span>ys) <span class="kw">else</span> (y<span class="op">:</span>ys, y<span class="op">:</span>ys)) x (dropWhile' p xs)</span></code></pre></div>
+<p>foldr만 사용했을 때는 foldr의 f함수가 현재 element, 남은 리스트에 대해서 fold된 값 이 2가지 값만 사용할 수 있었습니다. foldr과 tuple을 같이 사용하면, 현재 element, 남은 리스트에 대해서 fold된 값, 남은 리스트 이렇게 세 값을 사용할 수 있습니다. 더 많은 종류의 recursive 함수들을 foldr을 사용하여 구현할 수 있게 됩니다.</p>
+<h1 id="참고">참고</h1>
+<p><a href="http://www.cs.nott.ac.uk/~pszgmh/fold.pdf">http://www.cs.nott.ac.uk/~pszgmh/fold.pdf</a></p>
+
+<script src="https://utteranc.es/client.js" repo="majecty/blog-comments" issue-term="pathname" theme="github-light" crossorigin="anonymous" async>
+</script>
+
+            </div>
+            <div id="footer">
+                Site proudly generated by
+                <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+            </div>
+        </div>
+        <script type="text/javascript" src="https://wcs.naver.net/wcslog.js"></script>
+        <script type="text/javascript">
+        if(!wcs_add) var wcs_add = {};
+        wcs_add["wa"] = "1204a977388eb38";
+        wcs_do();
+        </script>
+    </body>
+</html>

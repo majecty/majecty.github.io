@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <meta property="og:type" content="website">
+        <meta property="og:title" content="주형 Blog - cocos creator에서 키보드 입력 받기">
+        <meta property="og:image" content="https://blog.majecty.com/favicon_310.png">
+
+        <link rel="icon" type="image/png" href="../favicon_16.png" sizes="16x16">
+        <link rel="icon" type="image/png" href="../favicon_32.png" sizes="32x32">
+        <link rel="icon" type="image/png" href="../favicon_96.png" sizes="96x96">
+        <link rel="icon" type="image/png" href="../favicon_310.png" sizes="310x310">
+
+        <title>주형 Blog - cocos creator에서 키보드 입력 받기</title>
+        <link rel="stylesheet" type="text/css" href="../css/default.css" />
+        <link rel="stylesheet" type="text/css" href="../css/syntax.css" />
+        <link rel="home" type="application/rss+xml" href="https://blog.majecty.com/atom.xml" />
+
+        <link href="//cdn.muicss.com/mui-0.9.41/css/mui.min.css" rel="stylesheet" type="text/css" />
+        <script src="//cdn.muicss.com/mui-0.9.41/js/mui.min.js"></script>
+
+        <link href="https://fonts.googleapis.com/css?family=Nanum+Gothic+Coding" rel="stylesheet"> 
+        <link href="https://fonts.googleapis.com/css?family=Nanum+Gothic" rel="stylesheet">
+        <script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-78778924-1', 'auto');
+ga('send', 'pageview');
+
+        </script>
+
+    </head>
+    <body class="mui-container">
+        <div style="margin:5px;">
+            <div id="header">
+                <div id="logo">
+                    
+                    <a href="../">주형 블로그</a>
+                    
+                </div>
+                <div id="navigation">
+                    
+                    <a href="../">Home</a>
+                    
+                    <a href="../contact.html">Contact</a>
+                    <a href="../wikis.html">Wiki</a>
+                </div>
+            </div>
+
+            <div id="content">
+                
+                <h1>cocos creator에서 키보드 입력 받기</h1>
+                
+
+                <div class="info">
+    2017년 3월 24일에 씀
+</div>
+
+<div class="info">
+    
+    찾아보기: <a title="All pages tagged 'cocos creator'." href="../tags/cocos%20creator.html" rel="tag">cocos creator</a>, <a title="All pages tagged 'game'." href="../tags/game.html" rel="tag">game</a>
+    
+</div>
+
+<br />
+
+<p>2017년 3월 24일에 cocos creator 1.1.1 버전을 사용한 것을 바탕으로 작성한 글입니다.</p>
+<p>cocos creator의 문서는 빠진 부분이 많습니다. 키보드 입력을 받는 부분도 문서에 없습니다. 아마 모바일 게임을 만들것이라고 가정해서 키보드 쪽 문서를 아직 작성하지 않은 것 같네요. 하지만 모바일에서도 키보드를 사용할 수도 있습니다. 웹게임이라면 키보드를 주 입력장치로 사용할 수도 있죠.</p>
+<p>아래부터 코드를 보겠습니다.
+(cocos2d engine쪽 코드를 읽고 돌아가는 방법을 찾았습니다. 버전업되면 다른 api로 바뀔지도 몰라요.)</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>    <span class="co">// use this for initialization</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    onLoad<span class="op">:</span> <span class="kw">function</span> () {</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>        <span class="kw">let</span> listener <span class="op">=</span> cc<span class="op">.</span><span class="at">EventListener</span><span class="op">.</span><span class="fu">create</span>({</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>            <span class="dt">event</span><span class="op">:</span> cc<span class="op">.</span><span class="at">EventListener</span><span class="op">.</span><span class="at">KEYBOARD</span><span class="op">,</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>            <span class="dt">onKeyPressed</span><span class="op">:</span> <span class="kw">function</span> (keyCode<span class="op">,</span> <span class="bu">event</span>) {</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>                cc<span class="op">.</span><span class="fu">log</span>(<span class="st">'pressed key: '</span> <span class="op">+</span> keyCode)<span class="op">;</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>            }<span class="op">,</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>            <span class="dt">onKeyReleased</span><span class="op">:</span> <span class="kw">function</span> (keyCode<span class="op">,</span> <span class="bu">event</span>) {</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>                cc<span class="op">.</span><span class="fu">log</span>(<span class="st">&quot;released key: &quot;</span> <span class="op">+</span> keyCode)<span class="op">;</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>            }</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>        })<span class="op">;</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>        cc<span class="op">.</span><span class="at">eventManager</span><span class="op">.</span><span class="fu">addListener</span>(listener<span class="op">,</span> <span class="kw">this</span><span class="op">.</span><span class="at">node</span>)<span class="op">;</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    }<span class="op">,</span></span></code></pre></div>
+<p>보시면 코드는 간단합니다.</p>
+<ol type="1">
+<li>listener를 생성</li>
+<li>전역 singleton인 eventManager에 등록.</li>
+</ol>
+<p>addListener의 두번째 인자는 event의 우선순위로써 숫자를 넘길 경우 빠른 숫자인 event부터 호출이 됩니다. 지금처럼 node를 넘길 경우 scene graph의 순서에 따라서 호출되게 됩니다.</p>
+<p>등록된 event는 addListener의 두번째 인자로 넣은 node가 파괴될 때 자동으로 없어집니다.</p>
+<p>addListener가 성공할 경우 listener를 다시 return해주는데 이 listener를 사용하여 이벤트만 없애고 싶을 때 eventManager.removeListener를 호출할 수 있습니다.</p>
+<h3 id="참고">참고</h3>
+<ul>
+<li><a href="https://github.com/cocos-creator/engine/blob/master/cocos2d/core/event-manager/CCEventManager.js#L749">addListener 소스 코드</a></li>
+<li><a href="https://github.com/cocos-creator/engine/blob/master/cocos2d/core/event-manager/CCEventManager.js#L810">removeListener 소스 코드</a></li>
+</ul>
+
+<script src="https://utteranc.es/client.js" repo="majecty/blog-comments" issue-term="pathname" theme="github-light" crossorigin="anonymous" async>
+</script>
+
+            </div>
+            <div id="footer">
+                Site proudly generated by
+                <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+            </div>
+        </div>
+        <script type="text/javascript" src="https://wcs.naver.net/wcslog.js"></script>
+        <script type="text/javascript">
+        if(!wcs_add) var wcs_add = {};
+        wcs_add["wa"] = "1204a977388eb38";
+        wcs_do();
+        </script>
+    </body>
+</html>

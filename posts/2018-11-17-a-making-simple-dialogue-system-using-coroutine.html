@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <meta property="og:type" content="website">
+        <meta property="og:title" content="주형 Blog - 코루틴으로 간단하게 대화창 만들기">
+        <meta property="og:image" content="https://blog.majecty.com/favicon_310.png">
+
+        <link rel="icon" type="image/png" href="../favicon_16.png" sizes="16x16">
+        <link rel="icon" type="image/png" href="../favicon_32.png" sizes="32x32">
+        <link rel="icon" type="image/png" href="../favicon_96.png" sizes="96x96">
+        <link rel="icon" type="image/png" href="../favicon_310.png" sizes="310x310">
+
+        <title>주형 Blog - 코루틴으로 간단하게 대화창 만들기</title>
+        <link rel="stylesheet" type="text/css" href="../css/default.css" />
+        <link rel="stylesheet" type="text/css" href="../css/syntax.css" />
+        <link rel="home" type="application/rss+xml" href="https://blog.majecty.com/atom.xml" />
+
+        <link href="//cdn.muicss.com/mui-0.9.41/css/mui.min.css" rel="stylesheet" type="text/css" />
+        <script src="//cdn.muicss.com/mui-0.9.41/js/mui.min.js"></script>
+
+        <link href="https://fonts.googleapis.com/css?family=Nanum+Gothic+Coding" rel="stylesheet"> 
+        <link href="https://fonts.googleapis.com/css?family=Nanum+Gothic" rel="stylesheet">
+        <script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-78778924-1', 'auto');
+ga('send', 'pageview');
+
+        </script>
+
+    </head>
+    <body class="mui-container">
+        <div style="margin:5px;">
+            <div id="header">
+                <div id="logo">
+                    
+                    <a href="../">주형 블로그</a>
+                    
+                </div>
+                <div id="navigation">
+                    
+                    <a href="../">Home</a>
+                    
+                    <a href="../contact.html">Contact</a>
+                    <a href="../wikis.html">Wiki</a>
+                </div>
+            </div>
+
+            <div id="content">
+                
+                <h1>코루틴으로 간단하게 대화창 만들기</h1>
+                
+
+                <div class="info">
+    2018년 11월 17일에 씀
+</div>
+
+<div class="info">
+    
+    찾아보기: <a title="All pages tagged 'unity'." href="../tags/unity.html" rel="tag">unity</a>, <a title="All pages tagged 'game'." href="../tags/game.html" rel="tag">game</a>
+    
+</div>
+
+<br />
+
+<p>코루틴을 사용하면 기본적인 대화창을 직관적으로 구현할 수 있습니다.</p>
+<p>대화창은 매우 많은 게임에서 사용됩니다. 비주얼 노벨은 물론, RPG, 액션, 퍼즐 게임 등 말을 할 수 있는 캐릭터가 나오는 게임이라면 플레이어에게 정보를 제공하기 위하여 대화창을 사용합니다. 유저들 역시 게임에 대한 정보를 얻는 과정으로써 대화창에 익숙합니다.</p>
+<p>하지만 유니티는 대화창 시스템을 제공하지 않습니다. 프로그래머가 직접 기본 UI로 만들거나 유료로 판매하는 대화창 시스템을 사용해야 합니다. 대화창에 대한 요구사항이 복잡하다면 기능이 많고 복잡한 유료 에셋을 쓰겠지만, 간단한 요구사항이라면 직접 만드는 게 낫습니다.</p>
+<p>대화창의 스펙을 정해봅시다.</p>
+<p>유저의 입력이 없는 경우를 먼저 생각해봅시다.</p>
+<ol type="1">
+<li>한 줄의 대화를 한 글자씩 유저에게 보여준다.</li>
+<li>모든 글자를 보여준 뒤 잠시 기다린다.</li>
+<li>다시 다음 줄의 대화를 한 글자씩 보여주기 시작한다.</li>
+</ol>
+<p>이 정도 스펙은 간단합니다. 다음과 같은 방식으로 만들 수 있겠네요.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode cs"><code class="sourceCode cs"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>IEnumerator <span class="fu">Run</span><span class="op">()</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">for</span> <span class="op">(</span><span class="dt">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> texts<span class="op">.</span><span class="fu">Count</span><span class="op">;</span> i <span class="op">+=</span> <span class="dv">1</span><span class="op">)</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>        <span class="kw">yield</span> <span class="kw">return</span> <span class="fu">PlayLine</span><span class="op">(</span>texts<span class="op">[</span>i<span class="op">]);</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>IEnumerator <span class="fu">PlayLine</span><span class="op">(</span><span class="dt">string</span> text<span class="op">)</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    <span class="kw">for</span> <span class="op">(</span><span class="dt">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> text<span class="op">.</span><span class="fu">Length</span><span class="op">()</span> <span class="op">+</span> <span class="dv">1</span><span class="op">;</span> i <span class="op">+=</span> <span class="dv">1</span><span class="op">)</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>        <span class="kw">yield</span> <span class="kw">return</span> <span class="kw">new</span> <span class="fu">WaitForSeconds</span><span class="op">(</span><span class="fl">0.05f</span><span class="op">);</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>        uiText<span class="op">.</span><span class="fu">text</span> <span class="op">=</span> text<span class="op">.</span><span class="fu">Substring</span><span class="op">(</span><span class="dv">0</span><span class="op">,</span> i<span class="op">);</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>    <span class="kw">yield</span> <span class="kw">return</span> <span class="kw">new</span> <span class="fu">WaitForSeconds</span><span class="op">(</span><span class="dv">3</span>f<span class="op">);</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>하지만 대부분의 유저는 게임의 대화창을 읽고 싶어 하지 않습니다. 최대한 빨리 대화창을 넘기고 게임을 하고 싶어 하죠. 그렇다고 대화창 전체를 스킵시켜버리면 중요한 내용을 알지 못하게 되어 게임 내에서 헤매게 됩니다. 따라서 성급한 유저를 위하여 빨리 진행하되 최소한의 내용은 숙지할 수 있을 정도의 시간 동안은 내용을 보여주어야 합니다.</p>
+<ol type="1">
+<li>한 줄의 대화를 한 글자씩 유저에게 보여주다가 유저가 스킵하면 남은 글자를 전부 보여준다.</li>
+<li>모든 글자를 보여준 뒤 잠시 기다린다.</li>
+<li>충분히 기다렸거나 기다리던 도중 유저가 스킵하면, 다시 다음 줄의 대화를 한 글자씩 보여주기 시작한다.</li>
+</ol>
+<p>이를 위의 코드에 추가하면 다음과 같이 됩니다.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode cs"><code class="sourceCode cs"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">enum</span> State</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    Playing<span class="op">,</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    PlayingSkipping<span class="op">,</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>IEnumerator <span class="fu">Run</span><span class="op">()</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">for</span> <span class="op">(</span><span class="dt">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> texts<span class="op">.</span><span class="fu">Count</span><span class="op">;</span> i <span class="op">+=</span> <span class="dv">1</span><span class="op">)</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>        <span class="kw">yield</span> <span class="kw">return</span> <span class="fu">PlayLine</span><span class="op">(</span>texts<span class="op">[</span>i<span class="op">]);</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>IEnumerator <span class="fu">PlayLine</span><span class="op">(</span><span class="dt">string</span> text<span class="op">)</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>    <span class="kw">for</span> <span class="op">(</span><span class="dt">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> text<span class="op">.</span><span class="fu">Length</span><span class="op">()</span> <span class="op">+</span> <span class="dv">1</span><span class="op">;</span> i <span class="op">+=</span> <span class="dv">1</span><span class="op">)</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>        <span class="kw">if</span> <span class="op">(</span>state <span class="op">==</span> State<span class="op">.</span><span class="fu">PlayingSkipping</span><span class="op">)</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>        <span class="op">{</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>            uiText<span class="op">.</span><span class="fu">text</span> <span class="op">=</span> text<span class="op">;</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>            state <span class="op">=</span> State<span class="op">.</span><span class="fu">Playing</span><span class="op">;</span></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>            <span class="kw">break</span><span class="op">;</span></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>        <span class="kw">yield</span> <span class="kw">return</span> <span class="kw">new</span> <span class="fu">WaitForSeconds</span><span class="op">(</span><span class="fl">0.05f</span><span class="op">);</span></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>        uiText<span class="op">.</span><span class="fu">text</span> <span class="op">=</span> text<span class="op">.</span><span class="fu">Substring</span><span class="op">(</span><span class="dv">0</span><span class="op">,</span> i<span class="op">);</span></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>    <span class="kw">yield</span> <span class="kw">return</span> <span class="kw">new</span> <span class="fu">WaitForSeconds</span><span class="op">(</span><span class="fl">0.5f</span><span class="op">);</span></span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>    <span class="kw">for</span> <span class="op">(</span><span class="dt">int</span> i<span class="op">=</span><span class="dv">0</span><span class="op">;</span> i<span class="op">&lt;</span><span class="dv">25</span><span class="op">;</span> i<span class="op">+=</span><span class="dv">1</span><span class="op">)</span></span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>    <span class="op">{</span></span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>        <span class="kw">yield</span> <span class="kw">return</span> <span class="kw">new</span> <span class="fu">WaitForSeconds</span><span class="op">(</span><span class="fl">0.1f</span><span class="op">);</span></span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>        <span class="kw">if</span> <span class="op">(</span>state <span class="op">==</span> State<span class="op">.</span><span class="fu">PlayingSkipping</span><span class="op">)</span></span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>        <span class="op">{</span></span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a>            state <span class="op">=</span> State<span class="op">.</span><span class="fu">Playing</span><span class="op">;</span></span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a>            <span class="kw">break</span><span class="op">;</span></span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a><span class="kw">public</span> <span class="dt">void</span> <span class="fu">Skip</span><span class="op">()</span></span>
+<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a>    state <span class="op">=</span> State<span class="op">.</span><span class="fu">PlayingSkipping</span><span class="op">;</span></span>
+<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>위 코드의 특이한 점은 유저가 skip을 눌렀을 때 단순히 state변수만을 수정한다는 점입니다. 이렇게 함으로써 유저가 여러 번 스킵을 불러도 안전하며, 코드의 실행 흐름이 <code>PlayLine</code>함수 안에 밀집되기 때문에 코드를 관리하기도 쉽습니다.</p>
+<p>완성된 예시 프로젝트는 아래 <a href="https://github.com/majecty/DialogueByCoroutineExample">깃헙 링크</a>에서 볼 수 있습니다.</p>
+<p>참고.</p>
+<p>이렇게 만든 대화 시스템은 유니티 UI에서 지원하는 RichText를 잘 지원하지 못합니다. RichText를 쉽게 쓸 수 있도록 제가 만든 간단한 라이브러리가 있습니다. 이 라이브러리를 쓰면 두 줄을 바꾸는 것으로 RichText를 지원할 수 있습니다. <a href="https://github.com/majecty/Unity3dRichTextHelper">이 링크</a>에서 확인하세요.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode cs"><code class="sourceCode cs"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">for</span> <span class="op">(</span><span class="dt">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> text<span class="op">.</span><span class="fu">RichTextLength</span><span class="op">()</span> <span class="op">+</span> <span class="dv">1</span><span class="op">;</span> i <span class="op">+=</span> <span class="dv">1</span><span class="op">)</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">yield</span> <span class="kw">return</span> <span class="kw">new</span> <span class="fu">WaitForSeconds</span><span class="op">(</span><span class="fl">0.05f</span><span class="op">);</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    uiText<span class="op">.</span><span class="fu">text</span> <span class="op">=</span> text<span class="op">.</span><span class="fu">RichTextSubString</span><span class="op">(</span>i<span class="op">);</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+
+<script src="https://utteranc.es/client.js" repo="majecty/blog-comments" issue-term="pathname" theme="github-light" crossorigin="anonymous" async>
+</script>
+
+            </div>
+            <div id="footer">
+                Site proudly generated by
+                <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+            </div>
+        </div>
+        <script type="text/javascript" src="https://wcs.naver.net/wcslog.js"></script>
+        <script type="text/javascript">
+        if(!wcs_add) var wcs_add = {};
+        wcs_add["wa"] = "1204a977388eb38";
+        wcs_do();
+        </script>
+    </body>
+</html>
