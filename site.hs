@@ -3,6 +3,7 @@
 {-# LANGUAGE ExplicitForAll #-}
 import           Data.Monoid (mappend)
 import           Hakyll
+import          Data.Time.Format (TimeLocale(..))
 
 hostName = "https://blog.majecty.com"
 
@@ -175,13 +176,35 @@ main = hakyll $ do
         ("posts/2021-07-17-b-undrstanding-gradle-2.html", "2021-07-17-b-understanding-gradle-2.html")
       ]
 
+koreanTimeLocale :: TimeLocale
+koreanTimeLocale = TimeLocale {
+    wDays = [ ("일", "일요일")
+            , ("월", "월요일")
+            , ("화", "화요일")
+            , ("수", "수요일")
+            , ("목", "목요일")
+            , ("금", "금요일")
+            , ("토", "토요일")
+            ]
+  , months = [ ("1월", "1"), ("2월", "2"), ("3월", "3"),
+                ("4월", "4"), ("5월", "5"), ("6월", "6"),
+                ("7월", "7"), ("8월", "8"), ("9월", "9"),
+                ("10월", "10"), ("11월", "11"), ("12월", "12")
+             ]
+  , amPm = ("오전", "오후")
+  , dateTimeFmt = "%a %b %e %H:%M:%S %Y"
+  , dateFmt = "%Y-%m-%d"
+  , timeFmt = "%H:%M:%S"
+  , time12Fmt = "%I:%M:%S %p"
+  , knownTimeZones = []
+  }
 
 --------------------------------------------------------------------------------
 postCtx :: Tags -> Context String
 postCtx tags =
     constField "host" hostName `mappend`
     tagsField "tags" tags `mappend`
-    dateField "date" "%B %e, %Y" `mappend`
+    dateFieldWith koreanTimeLocale "date" "%Y년 %B %e일" `mappend`
     defaultContext
 
 data SortOrder = RecentFirst | RecentLast
