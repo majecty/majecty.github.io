@@ -1,6 +1,5 @@
 ---
 title: Solana anchor에 대한 인상
-author: 주형
 tags: solana, anchor, blockchain
 summary: anchor 를 사용하면서 느낀 점
 ---

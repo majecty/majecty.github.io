@@ -1,6 +1,5 @@
 ---
 title: langgraph에서 벗어나기
-author: 주형
 tags: ai, llm
 summary: langgraph를 도입하고 langgraph로부터 벗어난 과정을 공유합니다.
 ---
