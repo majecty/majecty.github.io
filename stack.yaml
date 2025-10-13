@@ -5,4 +5,4 @@ extra-package-dbs: []
 packages:
 - '.'
 extra-deps:
-resolver: lts-22.39
+resolver: lts-24.15
