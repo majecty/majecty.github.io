@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block heading %}<h1>{% if term.name == "2016-06-07-foldr-presentation" %}foldr 발표를 위한 글들{% else %}{{ term.name | safe }}에 대해 작성한 글들{% endif %}</h1>{% endblock %}
+{% block content %}
+{% if term.name == "2016-06-07-foldr-presentation" %}
+<p>2016년 6월 7일 하스켈 학교에서 foldr에 대한 내용을 발표하기 위해 정리했습니다.<br>
+다음 논문을 읽고 쓴 글들입니다.</p>
+<a href="http://www.cs.nott.ac.uk/~pszgmh/fold.pdf">A tutorial on the universality and expressiveness of fold</a>
+<ul>
+{% for p in term.pages | reverse %}
+    <li><a href="{{ p.permalink }}">{{ p.title | safe }}</a> - {{ p.date | date(format="%Y년 %m월 %d일") }}</li>
+{% endfor %}
+</ul>
+<a href="/ppts/2016-06-07-foldr.html"> 발표자료 </a>
+{% else %}
+<ul>
+{% for p in term.pages %}
+    <li><a href="{{ p.permalink }}">{{ p.title | safe }}</a> - {{ p.date | date(format="%Y년 %m월 %d일") }}</li>
+{% endfor %}
+</ul>
+{% endif %}
+{% endblock %}

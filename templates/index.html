@@ -1,7 +1,6 @@
 {% extends "base.html" %}
-{% block heading %}<h1>Archives</h1>{% endblock %}
+{% block heading %}{% endblock %}
 {% block content %}
-모든 글들
 {% set s = get_section(path="posts/_index.md") %}
 <ul>
 {% for p in s.pages %}

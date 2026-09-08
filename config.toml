@@ -1,0 +1,11 @@
+base_url = "https://blog.majecty.com"
+title = "주형 Blog"
+description = "하스켈과 게임개발, 블록체인에 대해서 공부한 것, 경험한 것들을 정리했습니다."
+default_language = "en"
+generate_feeds = true
+feed_filenames = ["atom.xml"]
+generate_sitemap = true
+taxonomies = [
+  { name = "tags", feed = false },
+  { name = "wikitags", feed = false },
+]

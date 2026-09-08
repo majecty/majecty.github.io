@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block heading %}<h1>주제별 문서들</h1>{% endblock %}
+{% block content %}
+시간순이 아니라 주제별로 정리한 글들.<br />
+공부함에 따라 내용들이 자주 바뀔 수 있음.<br /><br />
+<ul>
+{% for p in section.pages %}
+    <li><a href="{{ p.permalink }}">{{ p.title | safe }}</a> - {{ p.date | date(format="%Y년 %m월 %d일") }}</li>
+{% endfor %}
+</ul>
+{% endblock %}

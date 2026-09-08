@@ -1,10 +1,8 @@
 {% extends "base.html" %}
-{% block heading %}<h1>Archives</h1>{% endblock %}
+{% block heading %}<h1>{{ section.title | safe }}</h1>{% endblock %}
 {% block content %}
-모든 글들
-{% set s = get_section(path="posts/_index.md") %}
 <ul>
-{% for p in s.pages %}
+{% for p in section.pages %}
     <li><a href="{{ p.permalink }}">{{ p.title | safe }}</a> - {{ p.date | date(format="%Y년 %m월 %d일") }}</li>
 {% endfor %}
 </ul>

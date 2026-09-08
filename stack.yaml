@@ -1,8 +1,0 @@
-flags:
-  hakyll:
-    previewserver: true
-extra-package-dbs: []
-packages:
-- '.'
-extra-deps:
-resolver: lts-24.15

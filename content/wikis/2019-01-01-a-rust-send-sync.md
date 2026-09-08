@@ -1,0 +1,44 @@
++++
+title = "Rust Send와 Sync"
+slug = "2019-01-01-a-rust-send-sync"
+date = 2019-01-01
+template = "post.html"
+aliases = ["wikis/2019-01-01-a-rust-send-sync.html"]
+[taxonomies]
+wikitags = ["rust", "send", "sync"]
+[extra]
+author = "주형"
++++
+
+# tldr;
+
+!Send는 Rc, !Sync는 Cell과 RefCell
+
+# 멀티쓰레드
+
+멀티쓰레드에서 동시에 여러 쓰레드가 같은 메모리에 값을 쓰거나, 같은 메모라를 읽기와 쓰기가 동시에 일어나면 의도치 않는 값이 써지거나 이상한 값이 읽히는 문제가 생긴다. Rust는 Send와 Sync 트레잇을 사용하여 위의 상황들을 컴파일 타임에 체크하고 막는다.
+
+Send는 다른 쓰레드로 이동시킬 수 있는 값에 자동으로 태깅되며, Sync는 다른 쓰레드와 레퍼런스를 공유할 수 있는 값에 자동으로 태깅된다.
+
+Send와 Sync 트레잇은 자동으로 구현되는 Trait이다. 가지고 있는 값이 모드 Send인 struct는 자동으로 Send 트레잇이 구현되며, 가지고 있는 모든 값이 Sync인 struct는 자동으로 Sync를 구현한다.
+
+## Send
+
+대부분의 타입은 소유권이 있는 쓰레드만이 쓰기가 가능하기 때문에 값을 이동시켜도 안전하다. 하지만 예외적으로 Rc타입은 레퍼런스들의 갯수를 세는 용도의 변수를 사용하기 때문에 다른 쓰레드로 이동시키면 안된다. 다른 쓰레드로 넘긴 Rc가 소멸될 때 다른 쓰레드의 변수를 수정하는 문제가 생길 수 있기 때문이다. 멀티쓰레드 환경에서 소유권을 공유하려면, 여러 쓰레드에서 접근하더라도 안전하게 변수를 수정하는 Arc 타입을 사용해야한다.
+
+## Sync
+
+대부분의 타입은 Borrow했을 때 읽기전용이기 때문에 여러 쓰레드에서 접근해도 문제가 없다. 하지만 Borrow했을 때도 값을 수정할 수 있도록 Interior Mutability를 지원하는 Cell과 RefCell타입은 여러쓰레드에서 공유했을 때 문제가 생긴다. 이 타입들은 값을 immutable하게 Borrow하더라도 내부의 값을 수정할 수 있기 때문에 여러 쓰레드에서 공유하면 동시에 값을 쓰는 문제가 발생할 수 있다. 여러 쓰레드에서도 안전한 Interior Mutability를 사용하려면 Mutex나 RwLock과 같은 락 타입을 사용해야한다.
+
+
+### !Sync를 Sync로 만들기
+
+!Sync인 타입들은 여러 쓰레드에서 공유할 수 없는 타입이지만 필요한 경우 Mutex로 값을 감싸서 여러 쓰레드에서 값을 공유할 수 있다. !Sync인 타입들의 특징은 Interior Mutability 특성을 가지고 있어서 Borrow한 값으로도 수정이 가능한다는 점인데 Mutex로 감싸면 실행시점에 한 쓰레드만이 값에 접근하는 것이 보장되기 때문에 안전하게 값을 여러쓰레드에서 공유할 수 있다.
+
+```rust
+impl<T: ?Sized + Send> Sync for Mutex<T>
+```
+
+## 쓰레드와 'static
+
+Sync를 구현한 타입이라고 하더라도 대부분의 레퍼런스는 다른 쓰레드와 공유하는 것이 불가능하다. Thread끼리 Reference를 공유하려면 Reference의 lifetime이 모든 쓰레드의 생명주기보다 길어야하며 이 조건을 만족시키려면 'static 레퍼런스밖에 없다. 'static 레퍼런스는 전역변수나 상수를 통해서만 만들 수 있다.

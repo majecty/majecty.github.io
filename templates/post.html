@@ -1,17 +1,15 @@
-<div class="info">
-    $date$에 씀
-</div>
-
-<div class="info">
-    $if(tags)$
-    찾아보기: $tags$
-    $endif$
-</div>
-
+{% extends "base.html" %}
+{% block heading %}<h1>{{ page.title | safe }}</h1>{% endblock %}
+{% block content %}
+{% if page.date %}<div class="info">{{ page.date | date(format="%Y년 %m월 %d일") }}에 씀</div>{% endif %}
+{% if page.taxonomies.tags %}
+<div class="info">찾아보기: {% for t in page.taxonomies.tags %}<a href="{{ get_taxonomy_url(kind="tags", name=t) }}">{{ t }}</a>{% if not loop.last %}, {% endif %}{% endfor %}</div>
+{% endif %}
+{% if page.taxonomies.wikitags %}
+<div class="info">찾아보기: {% for t in page.taxonomies.wikitags %}<a href="{{ get_taxonomy_url(kind="wikitags", name=t) }}">{{ t }}</a>{% if not loop.last %}, {% endif %}{% endfor %}</div>
+{% endif %}
 <br />
-
-$body$
-
+{{ page.content | safe }}
 <script src="https://utteranc.es/client.js"
         repo="majecty/blog-comments"
         issue-term="pathname"
@@ -19,3 +17,4 @@ $body$
         crossorigin="anonymous"
         async>
 </script>
+{% endblock %}

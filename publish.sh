@@ -1,7 +1,9 @@
+#!/bin/sh
+# Zola 발행: https://www.getzola.org/documentation/getting-started/installation/ 에서 zola 설치 필요
+set -e
 git branch -f main
-stack run site clean
-stack run site build
-cp -a _site/. .
+zola build
+cp -a public/. .
 git checkout main
 git add .
 git commit -m 'Publish'
