@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta property="og:type" content="website">
+        
+        
+        <meta property="og:title" content="주형 Blog - 코루틴으로 간단하게 대화창 만들기">
+        <meta property="og:image" content="https://blog.majecty.com/favicon_310.png">
+        <link rel="icon" type="image/png" href="/favicon_16.png" sizes="16x16">
+        <link rel="icon" type="image/png" href="/favicon_32.png" sizes="32x32">
+        <link rel="icon" type="image/png" href="/favicon_96.png" sizes="96x96">
+        <link rel="icon" type="image/png" href="/favicon_310.png" sizes="310x310">
+        <title>주형 Blog - 코루틴으로 간단하게 대화창 만들기</title>
+        <link rel="home" type="application/rss+xml" href="https://blog.majecty.com/atom.xml" />
+        <link href="//cdn.muicss.com/mui-0.9.41/css/mui.min.css" rel="stylesheet" type="text/css" />
+        <script src="//cdn.muicss.com/mui-0.9.41/js/mui.min.js"></script>
+        <link rel="stylesheet" type="text/css" href="/css/default.css" />
+        <link rel="stylesheet" type="text/css" href="/css/syntax.css" />
+        <link href="https://fonts.googleapis.com/css?family=Nanum+Gothic+Coding" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css?family=Nanum+Gothic" rel="stylesheet">
+        <script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+ga('create', 'UA-78778924-1', 'auto');
+ga('send', 'pageview');
+        </script>
+    </head>
+    <body class="mui-container">
+        <div style="margin:5px;">
+            <div id="header">
+                
+                
+                <div id="logo">
+                    <a href="/">주형 블로그</a>
+                </div>
+                <div id="navigation">
+                    <a href="/">Home</a>
+                    <a href="/contact/">Contact</a>
+                    <a href="/wikis/">Wiki</a>
+                </div>
+            </div>
+            <div id="content">
+                <h1>코루틴으로 간단하게 대화창 만들기</h1>
+                
+<div class="info">2018년 11월 17일에 씀</div>
+
+<div class="info">찾아보기: <a href="https://blog.majecty.com/tags/unity/">unity</a>, <a href="https://blog.majecty.com/tags/game/">game</a></div>
+
+
+<br />
+<p>코루틴을 사용하면 기본적인 대화창을 직관적으로 구현할 수 있습니다.</p>
+<p>대화창은 매우 많은 게임에서 사용됩니다. 비주얼 노벨은 물론, RPG, 액션, 퍼즐 게임 등 말을 할 수 있는 캐릭터가 나오는 게임이라면 플레이어에게 정보를 제공하기 위하여 대화창을 사용합니다. 유저들 역시 게임에 대한 정보를 얻는 과정으로써 대화창에 익숙합니다.</p>
+<p>하지만 유니티는 대화창 시스템을 제공하지 않습니다. 프로그래머가 직접 기본 UI로 만들거나 유료로 판매하는 대화창 시스템을 사용해야 합니다. 대화창에 대한 요구사항이 복잡하다면 기능이 많고 복잡한 유료 에셋을 쓰겠지만, 간단한 요구사항이라면 직접 만드는 게 낫습니다.</p>
+<p>대화창의 스펙을 정해봅시다.</p>
+<p>유저의 입력이 없는 경우를 먼저 생각해봅시다.</p>
+<ol>
+<li>한 줄의 대화를 한 글자씩 유저에게 보여준다.</li>
+<li>모든 글자를 보여준 뒤 잠시 기다린다.</li>
+<li>다시 다음 줄의 대화를 한 글자씩 보여주기 시작한다.</li>
+</ol>
+<p>이 정도 스펙은 간단합니다. 다음과 같은 방식으로 만들 수 있겠네요.</p>
+<pre><code data-lang="cs">IEnumerator Run()
+{
+    for (int i = 0; i &lt; texts.Count; i += 1)
+    {
+        yield return PlayLine(texts[i]);
+    }
+}
+
+IEnumerator PlayLine(string text)
+{
+    for (int i = 0; i &lt; text.Length() + 1; i += 1)
+    {
+        yield return new WaitForSeconds(0.05f);
+        uiText.text = text.Substring(0, i);
+    }
+
+    yield return new WaitForSeconds(3f);
+}
+</code></pre>
+<p>하지만 대부분의 유저는 게임의 대화창을 읽고 싶어 하지 않습니다. 최대한 빨리 대화창을 넘기고 게임을 하고 싶어 하죠. 그렇다고 대화창 전체를 스킵시켜버리면 중요한 내용을 알지 못하게 되어 게임 내에서 헤매게 됩니다. 따라서 성급한 유저를 위하여 빨리 진행하되 최소한의 내용은 숙지할 수 있을 정도의 시간 동안은 내용을 보여주어야 합니다.</p>
+<ol>
+<li>한 줄의 대화를 한 글자씩 유저에게 보여주다가 유저가 스킵하면 남은 글자를 전부 보여준다.</li>
+<li>모든 글자를 보여준 뒤 잠시 기다린다.</li>
+<li>충분히 기다렸거나 기다리던 도중 유저가 스킵하면, 다시 다음 줄의 대화를 한 글자씩 보여주기 시작한다.</li>
+</ol>
+<p>이를 위의 코드에 추가하면 다음과 같이 됩니다.</p>
+<pre><code data-lang="cs">enum State
+{
+    Playing,
+    PlayingSkipping,
+}
+
+IEnumerator Run()
+{
+    for (int i = 0; i &lt; texts.Count; i += 1)
+    {
+        yield return PlayLine(texts[i]);
+    }
+}
+
+IEnumerator PlayLine(string text)
+{
+    for (int i = 0; i &lt; text.Length() + 1; i += 1)
+    {
+        if (state == State.PlayingSkipping)
+        {
+            uiText.text = text;
+            state = State.Playing;
+            break;
+        }
+        yield return new WaitForSeconds(0.05f);
+        uiText.text = text.Substring(0, i);
+    }
+
+    yield return new WaitForSeconds(0.5f);
+
+    for (int i=0; i&lt;25; i+=1)
+    {
+        yield return new WaitForSeconds(0.1f);
+        if (state == State.PlayingSkipping)
+        {
+            state = State.Playing;
+            break;
+        }
+    }
+}
+
+public void Skip()
+{
+    state = State.PlayingSkipping;
+}
+</code></pre>
+<p>위 코드의 특이한 점은 유저가 skip을 눌렀을 때 단순히 state변수만을 수정한다는 점입니다. 이렇게 함으로써 유저가 여러 번 스킵을 불러도 안전하며, 코드의 실행 흐름이 <code>PlayLine</code>함수 안에 밀집되기 때문에 코드를 관리하기도 쉽습니다.</p>
+<p>완성된 예시 프로젝트는 아래 <a rel="external" href="https://github.com/majecty/DialogueByCoroutineExample">깃헙 링크</a>에서 볼 수 있습니다.</p>
+<p>참고.</p>
+<p>이렇게 만든 대화 시스템은 유니티 UI에서 지원하는 RichText를 잘 지원하지 못합니다. RichText를 쉽게 쓸 수 있도록 제가 만든 간단한 라이브러리가 있습니다. 이 라이브러리를 쓰면 두 줄을 바꾸는 것으로 RichText를 지원할 수 있습니다. <a rel="external" href="https://github.com/majecty/Unity3dRichTextHelper">이 링크</a>에서 확인하세요.</p>
+<pre><code data-lang="cs">for (int i = 0; i &lt; text.RichTextLength() + 1; i += 1)
+{
+    yield return new WaitForSeconds(0.05f);
+    uiText.text = text.RichTextSubString(i);
+}
+</code></pre>
+
+<script src="https://utteranc.es/client.js"
+        repo="majecty/blog-comments"
+        issue-term="pathname"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+</script>
+
+            </div>
+            <div id="footer">
+                Site proudly generated by
+                <a href="https://www.getzola.org/">Zola</a>
+            </div>
+        </div>
+        <script type="text/javascript" src="https://wcs.naver.net/wcslog.js"></script>
+        <script type="text/javascript">
+        if(!wcs_add) var wcs_add = {};
+        wcs_add["wa"] = "1204a977388eb38";
+        wcs_do();
+        </script>
+    </body>
+</html>

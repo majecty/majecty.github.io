@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta property="og:type" content="website">
+        
+        
+        <meta property="og:title" content="주형 Blog - Rust serde derive와 Value">
+        <meta property="og:image" content="https://blog.majecty.com/favicon_310.png">
+        <link rel="icon" type="image/png" href="/favicon_16.png" sizes="16x16">
+        <link rel="icon" type="image/png" href="/favicon_32.png" sizes="32x32">
+        <link rel="icon" type="image/png" href="/favicon_96.png" sizes="96x96">
+        <link rel="icon" type="image/png" href="/favicon_310.png" sizes="310x310">
+        <title>주형 Blog - Rust serde derive와 Value</title>
+        <link rel="home" type="application/rss+xml" href="https://blog.majecty.com/atom.xml" />
+        <link href="//cdn.muicss.com/mui-0.9.41/css/mui.min.css" rel="stylesheet" type="text/css" />
+        <script src="//cdn.muicss.com/mui-0.9.41/js/mui.min.js"></script>
+        <link rel="stylesheet" type="text/css" href="/css/default.css" />
+        <link rel="stylesheet" type="text/css" href="/css/syntax.css" />
+        <link href="https://fonts.googleapis.com/css?family=Nanum+Gothic+Coding" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css?family=Nanum+Gothic" rel="stylesheet">
+        <script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+ga('create', 'UA-78778924-1', 'auto');
+ga('send', 'pageview');
+        </script>
+    </head>
+    <body class="mui-container">
+        <div style="margin:5px;">
+            <div id="header">
+                
+                
+                <div id="logo">
+                    <a href="/">주형 블로그</a>
+                </div>
+                <div id="navigation">
+                    <a href="/">Home</a>
+                    <a href="/contact/">Contact</a>
+                    <a href="/wikis/">Wiki</a>
+                </div>
+            </div>
+            <div id="content">
+                <h1>Rust serde derive와 Value</h1>
+                
+<div class="info">2018년 12월 31일에 씀</div>
+
+<div class="info">찾아보기: <a href="https://blog.majecty.com/tags/rust/">rust</a>, <a href="https://blog.majecty.com/tags/serde/">serde</a>, <a href="https://blog.majecty.com/tags/json/">JSON</a></div>
+
+
+<br />
+<h2 id="tldr">tldr;</h2>
+<p>형식이 정해진 JSON 데이터는 struct나 enum으로 serialize/deserialize하고, 형식이 자유로운 데이터는 Value 타입을 사용하자.</p>
+<h2 id="derive-bangsig">Derive 방식</h2>
+<p>Rust에서 JSON 객체를 파싱할 때 가장 기본적인 방법은 struct로 변환하는 것이다. serde의 derive는 대부분의 타입에 대해서 serialize/deserialize 코드를 자동으로 생성한다.</p>
+<p>struct 타입의 값을 JSON으로 serialize/deserialize 하려면 JSON 데이터의 형태가 고정되어있어야한다.</p>
+<pre><code data-lang="rust">// struct의 serialize / deserialize 예시
+#[macro_use]
+extern crate serde_derive;
+
+extern crate serde;
+extern crate serde_json;
+
+#[derive(Serialize, Deserialize, Debug)]
+struct Person {
+  name: String,
+  age: i32,
+}
+
+fn main() {
+  let person: Person = Person {
+    name: &quot;jh&quot;.to_string(),
+    age: 3,
+  };
+
+  let serialized = serde_json::to_string(&amp;person).unwrap();
+  println!(&quot;Serialized {}&quot;, serialized);
+  // Serialized {&quot;name&quot;:&quot;jh&quot;,&quot;age&quot;:3}
+
+  let deserialized: Person = serde_json::from_str(&amp;serialized).unwrap();
+  println!(&quot;Deserialized {:?}&quot;, deserialized);
+  // Deserialized Person { name: &quot;jh&quot;, age: 3 }
+}
+</code></pre>
+<p>위 코드는 Person struct를 serialize/deserialize하는 예시이다. 위와 같이 형식이 정해져있는 JSON 데이터는 쉽게 변환이 가능하다.</p>
+<h2 id="hyeongsigi-jeonghaejyeoissji-anheun-deiteoyi-ceori">형식이 정해져있지 않은 데이터의 처리</h2>
+<p>하지만 모든 데이터의 형식이 정해져있는 것은 아니다. 유저가 직접 JSON을 생성해 넣는다면 가능한 임의의 값이 키값으로 생성될 수 있다. serde json의 Value타입을 사용하면 이런 타입들을 쉽게 serialize/deserialize할 수 있다.</p>
+<pre><code data-lang="rust">// value의 serialize / deserialize 예시
+extern crate serde;
+extern crate serde_json;
+
+use serde_json::Value;
+
+fn main() {
+  let data = r#&quot;{
+                  &quot;name&quot;: &quot;jh&quot;,
+                  &quot;age&quot;: 73
+              }&quot;#;
+  let v: Value = serde_json::from_str(data).unwrap();
+  println!(&quot;name is {}, age is {}&quot;, v[&quot;name&quot;], v[&quot;age&quot;]);
+}
+</code></pre>
+<p>위 예시는 JSON string을 Value로 읽어오는 예시이다.</p>
+<h2 id="du-bangsigyi-honhab">두 방식의 혼합</h2>
+<p>JSON 데이터가 일부분은 형식이 정해져있고 일부분은 형식이 안정해져있을 수 이다. 이 경우 derive방식과 Value방식을 혼합하여 사용할 수 있다. Serialize 트레잇을 정의한 타입은 serde_json::to_value를 사용하여 해당 타입을 Value타입으로 변환할 수 있다. Deserialize 트레엣을 정의한 타입은 serde_json::from_value를 사용하여 Value타입에서 원하는 타입으로 변환할 수 있다.</p>
+
+<script src="https://utteranc.es/client.js"
+        repo="majecty/blog-comments"
+        issue-term="pathname"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+</script>
+
+            </div>
+            <div id="footer">
+                Site proudly generated by
+                <a href="https://www.getzola.org/">Zola</a>
+            </div>
+        </div>
+        <script type="text/javascript" src="https://wcs.naver.net/wcslog.js"></script>
+        <script type="text/javascript">
+        if(!wcs_add) var wcs_add = {};
+        wcs_add["wa"] = "1204a977388eb38";
+        wcs_do();
+        </script>
+    </body>
+</html>
