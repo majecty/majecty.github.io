@@ -1,6 +1,6 @@
 body {
     /* color: black; */
-    font-size: 16px;
+    font-size: 18px;
     margin: 0px auto 0px auto;
     max-width: 800px;
     min-width: 350px;
@@ -20,7 +20,7 @@ div#header {
 div#logo a {
     color: black;
     float: left;
-    font-size: 18px;
+    font-size: 20px;
     font-weight: bold;
     text-decoration: none;
 }
@@ -31,7 +31,7 @@ div#header #navigation {
 
 div#header #navigation a {
     color: black;
-    font-size: 18px;
+    font-size: 20px;
     font-weight: bold;
     margin-left: 12px;
     text-decoration: none;
@@ -48,20 +48,20 @@ div#footer {
 }
 
 #content h1 {
-    font-size: 24px;
+    font-size: 28px;
 }
 
 #content h2 {
-    font-size: 20px;
+    font-size: 22px;
 }
 
 #content h3 {
-    font-size: 18px;
+    font-size: 20px;
 }
 
 div.info {
     color: #555;
-    font-size: 14px;
+    font-size: 15px;
     font-style: italic;
 }
 
